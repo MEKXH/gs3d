@@ -3,7 +3,6 @@
 
 """
 AWS S3文件夹下载器 (Generic S3 Downloader)
-支持匿名访问公开存储桶 - 修复版
 """
 
 import os
@@ -91,7 +90,7 @@ class S3FolderDownloader:
         # 如果指定了匿名访问，使用UNSIGNED配置
         if self.anonymous:
             print("使用匿名访问模式...")
-            # 使用UNSIGNED签名，这是正确的匿名访问方式
+            # 使用UNSIGNED签名
             client_kwargs['config'] = Config(signature_version=UNSIGNED)
             self.s3_client = boto3.client('s3', **client_kwargs)
             return self.s3_client
