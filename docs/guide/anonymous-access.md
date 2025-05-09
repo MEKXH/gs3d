@@ -42,7 +42,7 @@ python GS3D.py s3://public-dataset/nested/path/ --anonymous --keep-structure --o
 
 ## 技术实现
 
-在匿名访问模式下，S3下载工具使用以下配置创建S3客户端：
+在匿名访问模式下，GS3D下载工具使用以下配置创建S3客户端：
 
 ```python
 from botocore import UNSIGNED
@@ -98,7 +98,7 @@ s3_client = boto3.client(
 
 ## 公开数据集示例
 
-以下是一些可以用S3下载工具匿名访问的公开数据集示例：
+以下是一些可以用GS3D下载工具匿名访问的公开数据集示例：
 
 - **GEOS-Chem数据**：气候和大气化学数据
   ```bash

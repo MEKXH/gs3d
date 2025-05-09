@@ -30,7 +30,7 @@ pip install boto3 tqdm
 
 ### 获取脚本
 
-你可以通过以下方式获取S3下载工具脚本：
+你可以通过以下方式获取GS3D下载工具脚本：
 
 1. 从GitHub下载 (推荐)：
    ```bash
@@ -107,7 +107,7 @@ python GS3D.py s3://my-bucket/folder/ --max-workers 20
 
 ## 下一步
 
-现在你已经了解了S3下载工具的基本用法，可以继续探索更多高级功能：
+现在你已经了解了GS3D下载工具的基本用法，可以继续探索更多高级功能：
 
 - [基本用法](/guide/basic-usage) - 详细的命令行参数说明
 - [匿名访问](/guide/anonymous-access) - 深入了解如何访问公开存储桶

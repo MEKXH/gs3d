@@ -17,7 +17,7 @@ from botocore import UNSIGNED
 from botocore.config import Config
 
 
-class S3FolderDownloader:
+class S3Downloader:
     def __init__(self, s3_url=None, profile_name=None, access_key=None, secret_key=None,
                  region=None, output_dir=None, max_workers=10, anonymous=False):
         """
@@ -25,6 +25,7 @@ class S3FolderDownloader:
 
         参数:
             s3_url (str): S3链接，格式为 's3://bucket-name/folder/path/' 或 'https://bucket-name.s3.region.amazonaws.com/folder/path/'
+            当然，直接传入单个文件url也是可以的
             profile_name (str): AWS配置文件名称
             access_key (str): AWS访问密钥ID
             secret_key (str): AWS秘密访问密钥
@@ -250,7 +251,7 @@ def main():
         print("警告: 同时提供了配置文件和访问密钥，将优先使用访问密钥")
 
     # 初始化下载器
-    downloader = S3FolderDownloader(
+    downloader = S3Downloader(
         s3_url=args.s3_url,
         profile_name=args.profile,
         access_key=args.access_key,
