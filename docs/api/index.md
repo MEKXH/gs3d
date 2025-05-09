@@ -1,10 +1,10 @@
 # API参考
 
-本页面详细介绍G3SD工具的命令行参数和选项。
+本页面详细介绍GS3D工具的命令行参数和选项。
 
 ## 命令行参数
 
-G3SD支持以下命令行参数：
+GS3D支持以下命令行参数：
 
 | 参数 | 短格式 | 类型 | 默认值 | 描述 |
 |------|-------|------|-------|------|
@@ -23,7 +23,7 @@ G3SD支持以下命令行参数：
 基本语法：
 
 ```bash
-python G3SD.py S3链接 [选项]
+python GS3D.py S3链接 [选项]
 ```
 
 S3链接是唯一必需的参数，可以是以下格式之一：
@@ -39,7 +39,7 @@ S3链接是唯一必需的参数，可以是以下格式之一：
 
 例如：
 ```bash
-python G3SD.py s3://geos-chem/GEOS_2x2.5/MERRA2/2024/02/
+python GS3D.py s3://geos-chem/GEOS_2x2.5/MERRA2/2024/02/
 ```
 
 ### --profile / -p
@@ -48,7 +48,7 @@ python G3SD.py s3://geos-chem/GEOS_2x2.5/MERRA2/2024/02/
 
 例如：
 ```bash
-python G3SD.py s3://my-bucket/folder/ --profile work
+python GS3D.py s3://my-bucket/folder/ --profile work
 ```
 
 ### --access-key / -ak 和 --secret-key / -sk
@@ -57,7 +57,7 @@ python G3SD.py s3://my-bucket/folder/ --profile work
 
 例如：
 ```bash
-python G3SD.py s3://my-bucket/folder/ --access-key YOUR_ACCESS_KEY --secret-key YOUR_SECRET_KEY
+python GS3D.py s3://my-bucket/folder/ --access-key YOUR_ACCESS_KEY --secret-key YOUR_SECRET_KEY
 ```
 
 ### --region / -r
@@ -66,7 +66,7 @@ python G3SD.py s3://my-bucket/folder/ --access-key YOUR_ACCESS_KEY --secret-key 
 
 例如：
 ```bash
-python G3SD.py s3://my-bucket/folder/ --region us-east-1
+python GS3D.py s3://my-bucket/folder/ --region us-east-1
 ```
 
 常见的AWS区域代码：
@@ -81,7 +81,7 @@ python G3SD.py s3://my-bucket/folder/ --region us-east-1
 
 例如：
 ```bash
-python G3SD.py s3://my-bucket/folder/ --output-dir ./downloads
+python GS3D.py s3://my-bucket/folder/ --output-dir ./downloads
 ```
 
 ### --max-workers / -w
@@ -90,7 +90,7 @@ python G3SD.py s3://my-bucket/folder/ --output-dir ./downloads
 
 例如：
 ```bash
-python G3SD.py s3://my-bucket/folder/ --max-workers 20
+python GS3D.py s3://my-bucket/folder/ --max-workers 20
 ```
 
 ### --anonymous / -a
@@ -99,7 +99,7 @@ python G3SD.py s3://my-bucket/folder/ --max-workers 20
 
 例如：
 ```bash
-python G3SD.py s3://public-bucket/folder/ --anonymous
+python GS3D.py s3://public-bucket/folder/ --anonymous
 ```
 
 ### --keep-structure / -k
@@ -108,12 +108,12 @@ python G3SD.py s3://public-bucket/folder/ --anonymous
 
 例如：
 ```bash
-python G3SD.py s3://my-bucket/deep/nested/folder/ --keep-structure
+python GS3D.py s3://my-bucket/deep/nested/folder/ --keep-structure
 ```
 
 ## 返回值
 
-G3SD工具在成功执行时返回退出代码0，在遇到错误时返回非零退出代码。
+GS3D工具在成功执行时返回退出代码0，在遇到错误时返回非零退出代码。
 
 ## 示例组合
 
@@ -122,19 +122,19 @@ G3SD工具在成功执行时返回退出代码0，在遇到错误时返回非零
 ### 匿名访问公开数据集并保留目录结构
 
 ```bash
-python G3SD.py s3://geos-chem/GEOS_2x2.5/MERRA2/2024/02/ --anonymous --region us-east-1 --output-dir ./climate-data --keep-structure
+python GS3D.py s3://geos-chem/GEOS_2x2.5/MERRA2/2024/02/ --anonymous --region us-east-1 --output-dir ./climate-data --keep-structure
 ```
 
 ### 使用AWS配置文件访问私有存储桶并增加并发线程数
 
 ```bash
-python G3SD.py s3://my-private-bucket/important-data/ --profile production --output-dir ./backup --max-workers 25
+python GS3D.py s3://my-private-bucket/important-data/ --profile production --output-dir ./backup --max-workers 25
 ```
 
 ### 同时使用多个选项
 
 ```bash
-python G3SD.py s3://my-bucket/folder/ \
+python GS3D.py s3://my-bucket/folder/ \
   --profile development \
   --region eu-west-1 \
   --output-dir ./downloads \

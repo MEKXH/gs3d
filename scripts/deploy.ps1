@@ -1,4 +1,4 @@
-# G3SD文档网站部署脚本 (deploy.ps1)
+# GS3D文档网站部署脚本 (deploy.ps1)
 param (
     [string]$RepoUrl = "https://https://github.com/MEKXH/gs3d-doc.git",
     [string]$BranchName = "gh-pages",
@@ -201,7 +201,7 @@ function Publish-ToGitHubPages {
 
 # 主函数
 function Start-Deployment {
-    Show-Header "G3SD文档网站部署工具"
+    Show-Header "GS3D文档网站部署工具"
 
     # 检查要求
     if (-not (Test-Requirements)) {
@@ -223,8 +223,8 @@ function Start-Deployment {
 
     # 部署到GitHub Pages
     if (Publish-ToGitHubPages -RepoUrl $RepoUrl -BranchName $BranchName -Force $Force) {
-        Show-Success "`n恭喜！G3SD文档已成功部署到GitHub Pages。"
-        Show-Success "请访问 https://yourusername.github.io/G3SD/ 查看你的网站。"
+        Show-Success "`n恭喜！GS3D文档已成功部署到GitHub Pages。"
+        Show-Success "请访问 https://yourusername.github.io/GS3D/ 查看你的网站。"
     }
 }
 

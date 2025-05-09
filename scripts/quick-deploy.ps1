@@ -1,4 +1,4 @@
-# G3SD文档快速部署脚本
+# GS3D文档快速部署脚本
 # 使用方法: .\quick-deploy.ps1 -RepoUrl "https://https://github.com/MEKXH/gs3d-doc.git"
 
 param (
@@ -8,7 +8,7 @@ param (
     [switch]$Force = $false
 )
 
-Write-Host "开始部署G3SD文档网站..." -ForegroundColor Cyan
+Write-Host "开始部署GS3D文档网站..." -ForegroundColor Cyan
 
 # 检查Git是否安装
 if (-not (Get-Command -Name "git" -ErrorAction SilentlyContinue)) {
@@ -66,4 +66,4 @@ if ($LASTEXITCODE -ne 0) {
 }
 
 Write-Host "`n✅ 部署成功!" -ForegroundColor Green
-Write-Host "请访问 https://yourusername.github.io/G3SD/ 查看你的文档网站" -ForegroundColor Green
+Write-Host "请访问 https://yourusername.github.io/GS3D/ 查看你的文档网站" -ForegroundColor Green

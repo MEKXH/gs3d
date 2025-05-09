@@ -1,6 +1,6 @@
 # 故障排除
 
-本页面提供了使用G3SD工具时可能遇到的常见问题和解决方案。
+本页面提供了使用GS3D工具时可能遇到的常见问题和解决方案。
 
 ## 认证相关问题
 
@@ -14,7 +14,7 @@
 **解决方案**：
 1. 对于公开存储桶，使用`--anonymous`或`-a`参数：
    ```bash
-   python G3SD.py s3://public-bucket/folder/ --anonymous
+   python GS3D.py s3://public-bucket/folder/ --anonymous
    ```
 
 2. 如果确定需要认证，请提供凭证：
@@ -32,7 +32,7 @@
 **解决方案**：
 当使用匿名访问时出现此错误，说明匿名访问配置不正确。确保使用了正确的匿名访问方式：
 ```bash
-python G3SD.py s3://public-bucket/folder/ --anonymous
+python GS3D.py s3://public-bucket/folder/ --anonymous
 ```
 
 这个问题已在最新版本中修复，通过使用`botocore.UNSIGNED`配置。
@@ -51,7 +51,7 @@ python G3SD.py s3://public-bucket/folder/ --anonymous
 2. 检查存储桶名称和路径是否正确
 3. 尝试指定正确的AWS区域：
    ```bash
-   python G3SD.py s3://my-bucket/folder/ --anonymous --region us-east-1
+   python GS3D.py s3://my-bucket/folder/ --anonymous --region us-east-1
    ```
 
 ### NoSuchBucket
@@ -76,7 +76,7 @@ python G3SD.py s3://public-bucket/folder/ --anonymous
 **解决方案**：
 该存储桶在不同的区域，请使用`--region`参数指定正确的区域：
 ```bash
-python G3SD.py s3://my-bucket/folder/ --region us-west-2
+python GS3D.py s3://my-bucket/folder/ --region us-west-2
 ```
 
 尝试常见区域：`us-east-1`, `us-west-2`, `eu-west-1`, `ap-northeast-1`
@@ -92,7 +92,7 @@ python G3SD.py s3://my-bucket/folder/ --region us-west-2
 1. 默认情况下，工具只会保留相对于指定前缀的路径
 2. 如果需要保留完整路径，请使用`--keep-structure`或`-k`参数：
    ```bash
-   python G3SD.py s3://my-bucket/deep/nested/folder/ --output-dir ./downloads --keep-structure
+   python GS3D.py s3://my-bucket/deep/nested/folder/ --output-dir ./downloads --keep-structure
    ```
 
 ### 指定的S3路径中没有找到文件
@@ -118,7 +118,7 @@ python G3SD.py s3://my-bucket/folder/ --region us-west-2
 **解决方案**：
 1. 增加并发下载线程数：
    ```bash
-   python G3SD.py s3://my-bucket/folder/ --max-workers 30
+   python GS3D.py s3://my-bucket/folder/ --max-workers 30
    ```
 2. 确认网络连接稳定且带宽充足
 3. 对于大量小文件，提高线程数可能有帮助
@@ -132,7 +132,7 @@ python G3SD.py s3://my-bucket/folder/ --region us-west-2
 **解决方案**：
 1. 减少并发下载线程数：
    ```bash
-   python G3SD.py s3://my-bucket/folder/ --max-workers 5
+   python GS3D.py s3://my-bucket/folder/ --max-workers 5
    ```
 2. 分批下载大型目录，而不是一次下载所有文件
 
@@ -198,14 +198,14 @@ pip install boto3 tqdm
 
 1. 检查命令行帮助信息：
    ```bash
-   python G3SD.py --help
+   python GS3D.py --help
    ```
 
 2. 启用AWS SDK详细日志进行诊断：
    ```bash
    # 在Windows上
    set AWS_SDK_LOGGING=1
-   python G3SD.py ...
+   python GS3D.py ...
    ```
 
 3. 提交问题到GitHub仓库

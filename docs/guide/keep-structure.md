@@ -14,7 +14,7 @@ S3下载工具提供两种目录结构处理模式：
 在默认模式下，脚本会将文件下载到输出目录，只保留相对于指定前缀的路径：
 
 ```bash
-python G3SD.py s3://my-bucket/deep/nested/folder/ --output-dir ./downloads
+python GS3D.py s3://my-bucket/deep/nested/folder/ --output-dir ./downloads
 ```
 
 这将把 `deep/nested/folder/` 下的文件直接下载到 `./downloads` 目录，不会创建 `deep/nested/folder/` 的额外目录结构。
@@ -38,7 +38,7 @@ downloads/
 使用 `--keep-structure` 或 `-k` 参数可以保留完整的目录结构：
 
 ```bash
-python G3SD.py s3://my-bucket/deep/nested/folder/ --output-dir ./downloads --keep-structure
+python GS3D.py s3://my-bucket/deep/nested/folder/ --output-dir ./downloads --keep-structure
 ```
 
 这将把文件下载到 `./downloads/deep/nested/folder/` 目录，完整保留原始目录结构。
@@ -68,7 +68,7 @@ downloads/
 
 #### 不保留目录结构
 ```bash
-python G3SD.py s3://geos-chem/GEOS_2x2.5/MERRA2/2024/02/ --anonymous --output-dir ./climate-data
+python GS3D.py s3://geos-chem/GEOS_2x2.5/MERRA2/2024/02/ --anonymous --output-dir ./climate-data
 ```
 
 结果：
@@ -81,7 +81,7 @@ climate-data/
 
 #### 保留目录结构
 ```bash
-python G3SD.py s3://geos-chem/GEOS_2x2.5/MERRA2/2024/02/ --anonymous --output-dir ./climate-data --keep-structure
+python GS3D.py s3://geos-chem/GEOS_2x2.5/MERRA2/2024/02/ --anonymous --output-dir ./climate-data --keep-structure
 ```
 
 结果：
@@ -103,15 +103,15 @@ climate-data/
 #### 不保留结构（单独下载）
 ```bash
 # 单独下载每个月，放在不同目录
-python G3SD.py s3://geos-chem/GEOS_2x2.5/MERRA2/2024/01/ --anonymous --output-dir ./data-01
-python G3SD.py s3://geos-chem/GEOS_2x2.5/MERRA2/2024/02/ --anonymous --output-dir ./data-02
+python GS3D.py s3://geos-chem/GEOS_2x2.5/MERRA2/2024/01/ --anonymous --output-dir ./data-01
+python GS3D.py s3://geos-chem/GEOS_2x2.5/MERRA2/2024/02/ --anonymous --output-dir ./data-02
 ```
 
 #### 保留结构（统一目录）
 ```bash
 # 下载到同一个目录，保留结构以避免冲突
-python G3SD.py s3://geos-chem/GEOS_2x2.5/MERRA2/2024/01/ --anonymous --output-dir ./climate-data --keep-structure
-python G3SD.py s3://geos-chem/GEOS_2x2.5/MERRA2/2024/02/ --anonymous --output-dir ./climate-data --keep-structure
+python GS3D.py s3://geos-chem/GEOS_2x2.5/MERRA2/2024/01/ --anonymous --output-dir ./climate-data --keep-structure
+python GS3D.py s3://geos-chem/GEOS_2x2.5/MERRA2/2024/02/ --anonymous --output-dir ./climate-data --keep-structure
 ```
 
 ## 选择合适的模式

@@ -11,7 +11,7 @@ GS3D下载工具支持匿名访问公开的AWS S3存储桶，这意味着你可�
 使用`--anonymous`或`-a`参数可以启用匿名访问模式：
 
 ```bash
-python G3SD.py s3://public-bucket/folder/ --anonymous
+python GS3D.py s3://public-bucket/folder/ --anonymous
 ```
 
 在匿名访问模式下，脚本会使用AWS SDK的无签名配置（`botocore.UNSIGNED`），完全跳过认证过程。
@@ -21,7 +21,7 @@ python G3SD.py s3://public-bucket/folder/ --anonymous
 ### 下载公开气候数据
 
 ```bash
-python G3SD.py s3://geos-chem/GEOS_2x2.5/MERRA2/2024/02/ --anonymous --output-dir ./climate-data
+python GS3D.py s3://geos-chem/GEOS_2x2.5/MERRA2/2024/02/ --anonymous --output-dir ./climate-data
 ```
 
 ### 结合区域参数
@@ -29,7 +29,7 @@ python G3SD.py s3://geos-chem/GEOS_2x2.5/MERRA2/2024/02/ --anonymous --output-di
 有时需要指定正确的AWS区域才能成功访问公开存储桶：
 
 ```bash
-python G3SD.py s3://public-bucket/folder/ --anonymous --region us-east-1
+python GS3D.py s3://public-bucket/folder/ --anonymous --region us-east-1
 ```
 
 ### 保留目录结构
@@ -37,7 +37,7 @@ python G3SD.py s3://public-bucket/folder/ --anonymous --region us-east-1
 你可以将匿名访问与目录结构保留选项结合使用：
 
 ```bash
-python G3SD.py s3://public-dataset/nested/path/ --anonymous --keep-structure --output-dir ./data
+python GS3D.py s3://public-dataset/nested/path/ --anonymous --keep-structure --output-dir ./data
 ```
 
 ## 技术实现
@@ -102,17 +102,17 @@ s3_client = boto3.client(
 
 - **GEOS-Chem数据**：气候和大气化学数据
   ```bash
-  python G3SD.py s3://geos-chem/GEOS_2x2.5/MERRA2/2024/02/ --anonymous
+  python GS3D.py s3://geos-chem/GEOS_2x2.5/MERRA2/2024/02/ --anonymous
   ```
 
 - **NASA NEX数据**：气候模拟数据
   ```bash
-  python G3SD.py s3://nasanex/NEX-DCP30/ --anonymous --region us-west-2
+  python GS3D.py s3://nasanex/NEX-DCP30/ --anonymous --region us-west-2
   ```
 
 - **Common Crawl**：网络爬虫数据
   ```bash
-  python G3SD.py s3://commoncrawl/crawl-data/CC-MAIN-2023-06/ --anonymous
+  python GS3D.py s3://commoncrawl/crawl-data/CC-MAIN-2023-06/ --anonymous
   ```
 
 ## 最佳实践

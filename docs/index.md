@@ -1,19 +1,19 @@
 ---
 layout: home
 hero:
-  name: G3SD
+  name: GS3D
   text: 通用AWS S3下载工具
   tagline: 轻松下载AWS S3存储桶内容的Python工具
   image:
     src: /logo.svg
-    alt: G3SD Logo
+    alt: GS3D Logo
   actions:
     - theme: brand
       text: 快速开始
       link: /introduction/getting-started
     - theme: alt
       text: 查看源码
-      link: https://github.com/yourusername/G3SD
+      link: https://github.com/MEKXH/gs3d
 features:
   - icon: 🚀
     title: 高效下载
@@ -35,9 +35,9 @@ features:
     details: 简单的依赖要求，轻松安装和使用
 ---
 
-# AWS S3文件夹下载工具
+# 通用AWS S3下载工具
 
-G3SD（Generic S3 Downloader）是一个强大而简单的Python工具，专为从AWS S3存储桶下载文件而设计。无论是公开数据集还是私有内容，G3SD都能帮助您轻松获取所需文件。
+GS3D（Generic S3 Downloader）是一个强大而简单的Python工具，专为从AWS S3存储桶下载文件而设计。无论是公开数据集还是私有内容，GS3D都能帮助您轻松获取所需文件。
 
 ## 主要功能
 
@@ -59,18 +59,18 @@ pip install boto3 tqdm
 下载公开存储桶：
 
 ```bash
-python G3SD.py s3://public-bucket/folder/ --anonymous
+python GS3D.py s3://public-bucket/folder/ --anonymous
 ```
 
 保留目录结构：
 
 ```bash
-python G3SD.py s3://public-bucket/folder/ --anonymous --keep-structure
+python GS3D.py s3://public-bucket/folder/ --anonymous --keep-structure
 ```
 
-## 为什么选择G3SD？
+## 为什么选择GS3D？
 
-与AWS CLI的`aws s3 sync`命令相比，G3SD提供了：
+与AWS CLI的`aws s3 sync`命令相比，GS3D提供了：
 
 - 更简单的命令行界面
 - 内置的匿名访问支持
@@ -80,7 +80,7 @@ python G3SD.py s3://public-bucket/folder/ --anonymous --keep-structure
 
 ## 适用场景
 
-G3SD特别适用于：
+GS3D特别适用于：
 
 - 下载科研数据集（如GEOS-Chem气候数据）
 - 从公开S3存储桶获取资源
@@ -94,5 +94,5 @@ G3SD特别适用于：
 ---
 
 <div class="footer-message">
-G3SD是一个开源项目，遵循MIT许可证，欢迎贡献和改进。
+GS3D是一个开源项目，遵循MIT许可证，欢迎贡献和改进。
 </div>

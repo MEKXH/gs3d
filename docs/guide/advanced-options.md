@@ -9,7 +9,7 @@
 使用`--max-workers`或`-w`参数可以调整并发下载线程数：
 
 ```bash
-python G3SD.py s3://my-bucket/folder/ --max-workers 20
+python GS3D.py s3://my-bucket/folder/ --max-workers 20
 ```
 
 **最佳实践**：
@@ -43,7 +43,7 @@ python s3_folder_downloader.py s3://my-bucket/folder/ --max-workers 20
 某些S3存储桶严格要求在特定区域访问，可以使用`--region`参数明确指定：
 
 ```bash
-python G3SD.py s3://my-bucket/folder/ --region us-west-2
+python GS3D.py s3://my-bucket/folder/ --region us-west-2
 ```
 
 常见的AWS区域代码：
@@ -64,7 +64,7 @@ export AWS_ENDPOINT_URL=https://custom-endpoint.example.com
 set AWS_ENDPOINT_URL=https://custom-endpoint.example.com
 
 # 然后运行下载工具
-python G3SD.py s3://my-bucket/folder/
+python GS3D.py s3://my-bucket/folder/
 ```
 
 ## 路径和输出控制
@@ -102,7 +102,7 @@ S3下载工具会在下载过程中遇到错误时继续执行，并在完成时
 你可以组合多个高级选项来满足特定需求：
 
 ```bash
-python G3SD.py s3://my-bucket/folder/ \
+python GS3D.py s3://my-bucket/folder/ \
   --profile production \
   --region eu-west-1 \
   --output-dir ./data-backup \
@@ -115,7 +115,7 @@ python G3SD.py s3://my-bucket/folder/ \
 S3下载工具可以轻松集成到其他Python脚本中，通过导入`S3FolderDownloader`类：
 
 ```python
-from G3SD import S3FolderDownloader
+from GS3D import S3FolderDownloader
 
 downloader = S3FolderDownloader(
     s3_url="s3://my-bucket/folder/",

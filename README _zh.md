@@ -1,19 +1,21 @@
-# G3SD - Generic S3 Downloader
+# GS3D - 通用S3下载工具
 
 <p align="center">
-  <img src="./docs/public/logo.svg" alt="G3SD Logo" width="200"/>
+  <img src="./docs/public/logo.svg" alt="GS3D Logo" width="200"/>
 </p>
 
 <p align="center">
-  <a href="https://github.com/MEKXH/gs3d-doc/releases"><img src="https://img.shields.io/github/v/release/MEKXH/gs3d-doc" alt="Release"></a>
-  <a href="https://github.com/MEKXH/gs3d-doc/blob/main/LICENSE"><img src="https://img.shields.io/github/license/MEKXH/gs3d-doc" alt="License"></a>
-  <a href="https://github.com/MEKXH/gs3d-doc/issues"><img src="https://img.shields.io/github/issues/MEKXH/gs3d-doc" alt="Issues"></a>
-  <a href="https://MEKXH.github.io/G3SD/"><img src="https://img.shields.io/badge/docs-online-blue" alt="Documentation"></a>
+  <a href="https://github.com/MEKXH/gs3d/releases"><img src="https://img.shields.io/github/v/release/MEKXH/gs3d" alt="发布版本"></a>
+  <a href="https://github.com/MEKXH/gs3d/blob/main/LICENSE"><img src="https://img.shields.io/github/license/MEKXH/gs3d" alt="许可证"></a>
+  <a href="https://github.com/MEKXH/gs3d/issues"><img src="https://img.shields.io/github/issues/MEKXH/gs3d" alt="问题"></a>
+  <a href="https://mekxh.github.io/gs3d/"><img src="https://img.shields.io/badge/文档-在线-blue" alt="文档"></a>
 </p>
+
+[English](README.md)
 
 ## 简介
 
-G3SD (Generic S3 Downloader) 是一个通用的Python工具，专为从AWS S3存储桶下载整个文件夹及其内容而设计。它提供了简单而强大的命令行界面，让用户能够轻松地从S3存储桶中检索文件。
+GS3D (Generic S3 Downloader) 是一个通用的Python工具，专为从AWS S3存储桶下载整个文件夹及其内容而设计。它提供了简单而强大的命令行界面，让用户能够轻松地从S3存储桶中检索文件。
 
 ### 核心功能
 
@@ -36,13 +38,13 @@ G3SD (Generic S3 Downloader) 是一个通用的Python工具，专为从AWS S3存
 pip install boto3 tqdm
 ```
 
-### 获取G3SD
+### 获取GS3D
 
 克隆此仓库或直接下载脚本文件：
 
 ```bash
-git clone https://github.com/MEKXH/gs3d-doc.git
-cd G3SD
+git clone https://github.com/MEKXH/gs3d.git
+cd gs3d
 ```
 
 ## 快速开始
@@ -50,25 +52,25 @@ cd G3SD
 ### 基本用法
 
 ```bash
-python G3SD.py s3://my-bucket/my-folder/ --output-dir ./downloads
+python GS3D.py s3://my-bucket/my-folder/ --output-dir ./downloads
 ```
 
 ### 下载公开存储桶内容
 
 ```bash
-python G3SD.py s3://public-bucket/folder/ --anonymous
+python GS3D.py s3://public-bucket/folder/ --anonymous
 ```
 
 ### 保留完整目录结构
 
 ```bash
-python G3SD.py s3://my-bucket/folder/ --keep-structure --output-dir ./downloads
+python GS3D.py s3://my-bucket/folder/ --keep-structure --output-dir ./downloads
 ```
 
 ### 使用AWS配置文件
 
 ```bash
-python G3SD.py s3://my-bucket/folder/ --profile my-profile-name
+python GS3D.py s3://my-bucket/folder/ --profile my-profile-name
 ```
 
 ## 命令行参数
@@ -90,13 +92,13 @@ python G3SD.py s3://my-bucket/folder/ --profile my-profile-name
 ### 下载GEOS-Chem气候数据
 
 ```bash
-python G3SD.py s3://geos-chem/GEOS_2x2.5/MERRA2/2024/02/ --anonymous --region us-east-1 --output-dir ./climate-data
+python GS3D.py s3://geos-chem/GEOS_2x2.5/MERRA2/2024/02/ --anonymous --region us-east-1 --output-dir ./climate-data
 ```
 
 ### 备份项目资源
 
 ```bash
-python G3SD.py s3://my-company/project-assets/ --profile work --output-dir ./backup --keep-structure
+python GS3D.py s3://my-company/project-assets/ --profile work --output-dir ./backup --keep-structure
 ```
 
 ### 在AWS EC2实例上使用
@@ -104,12 +106,12 @@ python G3SD.py s3://my-company/project-assets/ --profile work --output-dir ./bac
 在EC2实例上运行且已配置IAM角色时，无需提供凭证：
 
 ```bash
-python G3SD.py s3://internal-data/reports/ --output-dir /mnt/data
+python GS3D.py s3://internal-data/reports/ --output-dir /mnt/data
 ```
 
 ## 文档
 
-完整文档可在我们的[官方文档网站](https://yourusername.github.io/G3SD/)查看。
+完整文档可在我们的[官方文档网站](https://mekxh.github.io/gs3d/)查看。
 
 ### 本地运行文档
 
@@ -142,7 +144,7 @@ pnpm docs:dev
 快速版脚本更为简洁，但需要提供仓库URL：
 
 ```powershell
-.\scripts\quick-deploy.ps1 -RepoUrl "https://github.com/MEKXH/gs3d-doc.git"
+.\scripts\quick-deploy.ps1 -RepoUrl "https://github.com/MEKXH/gs3d.git"
 ```
 
 两个脚本都支持以下参数：
@@ -153,8 +155,8 @@ pnpm docs:dev
 ## 项目结构
 
 ```
-G3SD/
-├── G3SD.py              # 主脚本文件
+gs3d/
+├── GS3D.py              # 主脚本文件
 ├── docs/                # 文档源文件
 │   ├── .vitepress/      # VitePress配置
 │   ├── public/          # 静态资源
@@ -185,8 +187,6 @@ G3SD/
 
 ## 联系方式
 
-如有任何问题或建议，请[开启一个issue](https://github.com/MEKXH/gs3d-doc/issues)或通过email联系我们：your.email@example.com
+如有任何问题或建议，请[开启一个issue](https://github.com/MEKXH/gs3d/issues)
 
 ---
-
-<p align="center">Made with ❤️ for the AWS S3 community</p>

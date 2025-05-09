@@ -19,7 +19,7 @@ python --version
 
 ### 安装依赖
 
-G3SD下载工具依赖于两个主要的Python库：
+GS3D下载工具依赖于两个主要的Python库：
 
 ```bash
 pip install boto3 tqdm
@@ -34,13 +34,13 @@ pip install boto3 tqdm
 
 1. 从GitHub下载 (推荐)：
    ```bash
-   git clone https://github.com/yourusername/G3SD.git
-   cd G3SD
+   git clone https://github.com/yourusername/GS3D.git
+   cd GS3D
    ```
 
 2. 或者直接下载单个脚本文件：
    ```bash
-   curl -O https://raw.githubusercontent.com/yourusername/G3SD/main/G3SD.py
+   curl -O https://raw.githubusercontent.com/yourusername/GS3D/main/GS3D.py
    ```
 
 ## 基本使用
@@ -50,7 +50,7 @@ pip install boto3 tqdm
 要从公开存储桶下载文件，使用`--anonymous`或`-a`参数：
 
 ```bash
-python G3SD.py s3://public-bucket/folder/ --anonymous
+python GS3D.py s3://public-bucket/folder/ --anonymous
 ```
 
 ### 指定下载目录
@@ -58,7 +58,7 @@ python G3SD.py s3://public-bucket/folder/ --anonymous
 使用`--output-dir`或`-o`参数指定下载目录：
 
 ```bash
-python G3SD.py s3://public-bucket/folder/ --anonymous --output-dir ./downloads
+python GS3D.py s3://public-bucket/folder/ --anonymous --output-dir ./downloads
 ```
 
 ### 保留目录结构
@@ -66,7 +66,7 @@ python G3SD.py s3://public-bucket/folder/ --anonymous --output-dir ./downloads
 如果你想保留完整的S3目录结构，添加`--keep-structure`或`-k`参数：
 
 ```bash
-python G3SD.py s3://public-bucket/folder/ --anonymous --output-dir ./downloads --keep-structure
+python GS3D.py s3://public-bucket/folder/ --anonymous --output-dir ./downloads --keep-structure
 ```
 
 ## 认证方式
@@ -76,7 +76,7 @@ python G3SD.py s3://public-bucket/folder/ --anonymous --output-dir ./downloads -
 如果你已经配置了AWS凭证，可以使用配置文件：
 
 ```bash
-python G3SD.py s3://my-bucket/folder/ --profile my-profile-name
+python GS3D.py s3://my-bucket/folder/ --profile my-profile-name
 ```
 
 ### 使用访问密钥
@@ -84,7 +84,7 @@ python G3SD.py s3://my-bucket/folder/ --profile my-profile-name
 或者直接提供AWS访问密钥：
 
 ```bash
-python G3SD.py s3://my-bucket/folder/ --access-key YOUR_ACCESS_KEY --secret-key YOUR_SECRET_KEY
+python GS3D.py s3://my-bucket/folder/ --access-key YOUR_ACCESS_KEY --secret-key YOUR_SECRET_KEY
 ```
 
 ## 常见问题排查
@@ -102,7 +102,7 @@ python G3SD.py s3://my-bucket/folder/ --access-key YOUR_ACCESS_KEY --secret-key 
 如果下载速度不理想，可以调整并发下载线程数：
 
 ```bash
-python G3SD.py s3://my-bucket/folder/ --max-workers 20
+python GS3D.py s3://my-bucket/folder/ --max-workers 20
 ```
 
 ## 下一步

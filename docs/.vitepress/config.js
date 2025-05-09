@@ -1,13 +1,12 @@
 export default {
     base: '/gs3d/',
-    title: 'G3SD文档',
+    title: 'GS3D文档',
     description: '通用AWS S3下载工具',
     head: [
-        ['link', { rel: 'icon', type: 'image/svg+xml', href: '/favicon.svg' }],
+        ['link', { rel: 'icon', type: 'image/svg+xml', href: 'public/favicon.svg' }],
         ['link', { rel: 'alternate icon', href: '/favicon.svg' }],
     ],
-    // 如果部署到GitHub Pages子目录
-    // base: '/G3SD/',
+
     themeConfig: {
         // 添加logo到导航栏
         logo: '/logo.svg',
@@ -38,7 +37,7 @@ export default {
                 {
                     text: '介绍',
                     items: [
-                        { text: '介绍首页', link: '/introduction/' },
+                        // { text: '介绍首页', link: '/introduction/' },
                         { text: '什么是S3下载工具', link: '/introduction/what-is' },
                         { text: '快速开始', link: '/introduction/getting-started' }
                     ]
@@ -56,7 +55,7 @@ export default {
 
         // 社交链接
         socialLinks: [
-            { icon: 'github', link: 'https://github.com/yourusername/G3SD' }
+            { icon: 'github', link: 'https://github.com/MEKXH/gs3d' }
         ],
 
         // 页脚配置
