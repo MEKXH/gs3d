@@ -3,13 +3,13 @@ export default {
     title: 'GS3D文档',
     description: '通用AWS S3下载工具',
     head: [
-        ['link', { rel: 'icon', type: 'image/svg+xml', href: 'public/favicon.svg' }],
+        ['link', { rel: 'icon', type: 'image/svg+xml', href: 'favicon.svg' }],
         ['link', { rel: 'alternate icon', href: '/favicon.svg' }],
     ],
 
     themeConfig: {
         // 添加logo到导航栏
-        logo: '/logo.svg',
+        logo: 'logo.svg',
 
         // 导航栏配置
         nav: [
