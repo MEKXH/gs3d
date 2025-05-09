@@ -6,7 +6,7 @@
 
 <p align="center">
   <a href="https://github.com/MEKXH/gs3d/releases"><img src="https://img.shields.io/github/v/release/MEKXH/gs3d" alt="Release"></a>
-  <a href="https://github.com/MEKXH/gs3d/LICENSE"><img src="https://img.shields.io/github/license/MEKXH/gs3d" alt="License"></a>
+  <a href="https://github.com/MEKXH/gs3d/blob/master/LICENSE"><img src="https://img.shields.io/github/license/MEKXH/gs3d" alt="License"></a>
   <a href="https://github.com/MEKXH/gs3d/issues"><img src="https://img.shields.io/github/issues/MEKXH/gs3d" alt="Issues"></a>
   <a href="https://mekxh.github.io/gs3d/"><img src="https://img.shields.io/badge/docs-online-blue" alt="Documentation"></a>
 </p>
