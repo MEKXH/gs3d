@@ -1,4 +1,5 @@
 export default {
+    base: '/gs3d/',
     title: 'G3SD文档',
     description: '通用AWS S3下载工具',
     head: [
