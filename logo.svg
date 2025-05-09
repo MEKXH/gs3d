@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<svg viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <!-- Vite风格的蓝色渐变 -->
+    <linearGradient id="blueGrad" x1="30%" y1="0%" x2="70%" y2="100%">
+      <stop offset="0%" stop-color="#41D1FF" />
+      <stop offset="100%" stop-color="#646CFF" />
+    </linearGradient>
+
+    <!-- Vite风格的紫色渐变 -->
+    <linearGradient id="purpleGrad" x1="0%" y1="20%" x2="100%" y2="80%">
+      <stop offset="0%" stop-color="#BD34FE" />
+      <stop offset="100%" stop-color="#7B61FF" />
+    </linearGradient>
+  </defs>
+
+  <!-- 完全居中的logo -->
+  <g transform="translate(100, 100) scale(1.5) translate(-100, -95)">
+    <!-- 极简G字母形状，包含下载箭头 -->
+    <path d="M85,60 C65,60 50,75 50,95 C50,115 65,130 85,130 L115,130 L115,105 L85,105 C80,105 75,100 75,95 C75,90 80,85 85,85 L100,85 L100,60 L85,60 Z"
+          fill="url(#blueGrad)" />
+
+    <!-- 下载箭头 -->
+    <path d="M120,60 L150,60 L135,90 L115,90 L115,105 L150,105 L115,130 L120,60 Z"
+          fill="url(#purpleGrad)" />
+
+    <!-- S3标识 -->
+    <text x="88" y="80" font-family="'SF Pro Display', 'Inter', system-ui, sans-serif" font-size="16" font-weight="700"
+          text-anchor="middle" fill="white">S3</text>
+  </g>
+</svg>

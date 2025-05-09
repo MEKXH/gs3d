@@ -1,0 +1,1 @@
+import{_ as a,c as i,o as t,ag as e}from"./chunks/framework.B-su3jjs.js";const c=JSON.parse('{"title":"API参考","description":"","frontmatter":{},"headers":[],"relativePath":"api/index.md","filePath":"api/index.md"}'),h={name:"api/index.md"};function d(p,s,n,l,k,o){return t(),i("div",null,s[0]||(s[0]=[e("",55)]))}const F=a(h,[["render",d]]);export{c as __pageData,F as default};
