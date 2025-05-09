@@ -38,7 +38,7 @@ export default {
                     text: '介绍',
                     items: [
                         // { text: '介绍首页', link: '/introduction/' },
-                        { text: '什么是S3下载工具', link: '/introduction/what-is' },
+                        { text: '什么是GS3D下载工具', link: '/introduction/what-is' },
                         { text: '快速开始', link: '/introduction/getting-started' }
                     ]
                 }
