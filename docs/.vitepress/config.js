@@ -61,7 +61,7 @@ export default {
         // 页脚配置
         footer: {
             message: '使用MIT许可证发布',
-            copyright: 'Copyright © 2025'
+            copyright: 'Copyright ©MEKXH 2025'
         },
 
         // 搜索配置

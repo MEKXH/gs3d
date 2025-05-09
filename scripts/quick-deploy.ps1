@@ -1,9 +1,9 @@
 # GS3D文档快速部署脚本
-# 使用方法: .\quick-deploy.ps1 -RepoUrl "https://https://github.com/MEKXH/gs3d-doc.git"
+# 使用方法: .\quick-deploy.ps1 -RepoUrl "https://github.com/MEKXH/gs3d.git"
 
 param (
-    [Parameter(Mandatory = $true)]
-    [string]$RepoUrl,
+    [Parameter(Mandatory = $false)]  # 设为非必需，使用默认值
+    [string]$RepoUrl = "https://github.com/MEKXH/gs3d.git", # 提供默认值
     [string]$BranchName = "gh-pages",
     [switch]$Force = $false
 )
@@ -66,4 +66,4 @@ if ($LASTEXITCODE -ne 0) {
 }
 
 Write-Host "`n✅ 部署成功!" -ForegroundColor Green
-Write-Host "请访问 https://yourusername.github.io/GS3D/ 查看你的文档网站" -ForegroundColor Green
+Write-Host "请访问 https://mekxh.github.io/gs3d/ 查看你的文档网站" -ForegroundColor Green
