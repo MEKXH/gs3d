@@ -1,0 +1,62 @@
+:root {
+    /* 自定义品牌颜色 - 与Logo匹配 */
+    --vp-c-brand: #3498db;
+    --vp-c-brand-light: #5dade2;
+    --vp-c-brand-lighter: #85c1e9;
+    --vp-c-brand-dark: #2874a6;
+    --vp-c-brand-darker: #1a5276;
+
+    /* 自定义强调色 - 与Logo中的下载箭头颜色匹配 */
+    --vp-c-green: #2ecc71;
+    --vp-c-green-light: #58d68d;
+    --vp-c-green-lighter: #80e5a8;
+    --vp-c-green-dark: #27ae60;
+    --vp-c-green-darker: #219955;
+
+    /* 自定义首页布局 */
+    --vp-home-hero-name-color: transparent;
+    --vp-home-hero-name-background: linear-gradient(120deg, #3498db, #2ecc71);
+
+    /* 自定义容器宽度 */
+    --vp-layout-max-width: 1440px;
+}
+
+/* 导航栏Logo样式 */
+.VPNavBarTitle .logo {
+    height: 32px;
+    width: auto;
+}
+
+/* 首页Logo样式 */
+.VPHero .image-bg {
+    z-index: -1;
+    /* 确保背景在文字后面 */
+}
+
+.VPHero .image-container {
+    transform: scale(1.2);
+    /* 增大Logo尺寸 */
+}
+
+/* 自定义容器样式 */
+.custom-block.tip {
+    border-color: var(--vp-c-brand);
+}
+
+.custom-block.warning {
+    border-color: #e67e22;
+}
+
+.custom-block.danger {
+    border-color: #e74c3c;
+}
+
+/* 特殊样式 - 底部页脚消息 */
+.footer-message {
+    text-align: center;
+    margin-top: 2rem;
+    padding-top: 1rem;
+    border-top: 1px solid var(--vp-c-divider);
+    color: var(--vp-c-text-2);
+    font-size: 0.9rem;
+}
