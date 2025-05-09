@@ -34,13 +34,13 @@ pip install boto3 tqdm
 
 1. 从GitHub下载 (推荐)：
    ```bash
-   git clone https://github.com/yourusername/GS3D.git
+   git clone https://github.com/MEKXH/gs3d.git
    cd GS3D
    ```
 
 2. 或者直接下载单个脚本文件：
    ```bash
-   curl -O https://raw.githubusercontent.com/yourusername/GS3D/main/GS3D.py
+   curl -O https://raw.githubusercontent.com/MEKXH/gs3d/master/src/GS3D.py
    ```
 
 ## 基本使用

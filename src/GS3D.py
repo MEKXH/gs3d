@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 
 """
-AWS S3文件夹下载器 (Generic S3 Downloader)
+AWS S3 下载器 (Generic S3 Downloader)
 """
 
 import os
@@ -21,7 +21,7 @@ class S3FolderDownloader:
     def __init__(self, s3_url=None, profile_name=None, access_key=None, secret_key=None,
                  region=None, output_dir=None, max_workers=10, anonymous=False):
         """
-        初始化S3文件夹下载器
+        初始化S3下载器
 
         参数:
             s3_url (str): S3链接，格式为 's3://bucket-name/folder/path/' 或 'https://bucket-name.s3.region.amazonaws.com/folder/path/'
