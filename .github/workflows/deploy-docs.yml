@@ -2,7 +2,7 @@ name: Deploy VitePress site to GitHub Pages
 
 on:
   push:
-    branches: [main] # 当推送到main分支时触发
+    branches: [master] # 当推送到master分支时触发
   workflow_dispatch: # 允许手动触发
 
 jobs:
