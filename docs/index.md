@@ -42,7 +42,6 @@ features:
   - icon: ⚡
     title: 高效下载
     details: 多线程并行下载，最大限度提升下载速度
-
 ---
 
 # 通用AWS S3下载工具
@@ -159,8 +158,8 @@ sha256sum gs3d-linux-x86_64
 
 <div style="display: flex; gap: 12px; margin-top: 24px;">
   <a href="https://github.com/MEKXH/gs3d/releases/latest" style="background: linear-gradient(145deg, #3246d3, #4366ea); color: white; padding: 12px 24px; border-radius: 8px; text-decoration: none; font-weight: bold;">下载可执行文件</a>
-  <a href="/introduction/getting-started" style="background: #f4f4f5; color: #3c3c43; padding: 12px 24px; border-radius: 8px; text-decoration: none; font-weight: bold;">查看指南</a>
-  <a href="/api/command-reference" style="border: 1px solid #e4e4e7; color: #3c3c43; padding: 12px 24px; border-radius: 8px; text-decoration: none; font-weight: bold;">API参考</a>
+  <a href="/guide/" style="background: #f4f4f5; color: #3c3c43; padding: 12px 24px; border-radius: 8px; text-decoration: none; font-weight: bold;">查看指南</a>
+  <a href="/api/index" style="border: 1px solid #e4e4e7; color: #3c3c43; padding: 12px 24px; border-radius: 8px; text-decoration: none; font-weight: bold;">API参考</a>
 </div>
 
 ---
