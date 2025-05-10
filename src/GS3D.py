@@ -8,11 +8,13 @@
 
 import os
 import re
+import sys
 import boto3
+import signal
 import argparse
 import threading
 import urllib.parse
-from concurrent.futures import ThreadPoolExecutor
+from concurrent.futures import ThreadPoolExecutor, as_completed
 from tqdm import tqdm
 from botocore import UNSIGNED
 from botocore.config import Config
@@ -57,6 +59,37 @@ class S3Downloader:
 
         # 下载类型标识
         self.download_type = None  # 'file' 或 'folder'
+
+        # 中断标志
+        self.interrupted = False
+        self.executor = None
+
+        # 设置信号处理器
+        self._setup_signal_handlers()
+
+    def _setup_signal_handlers(self):
+        """设置信号处理器，用于处理Ctrl+C等中断信号"""
+        def signal_handler(signum, frame):
+            print("\n\n检测到中断信号，正在安全退出...")
+            self.interrupted = True
+
+            # 关闭进度条
+            if self.progress_bar:
+                self.progress_bar.close()
+
+            # 如果正在进行文件夹下载，取消所有正在进行的任务
+            if self.executor:
+                self.executor.shutdown(wait=False)
+
+            # 打印下载统计
+            print(f"\n已下载 {self.downloaded_files}/{self.total_files} 个文件")
+            print("下载已中断，程序即将退出...")
+
+            sys.exit(1)
+
+        # 注册信号处理器
+        signal.signal(signal.SIGINT, signal_handler)  # Ctrl+C
+        signal.signal(signal.SIGTERM, signal_handler)  # 终止信号
 
     def _parse_s3_url(self, s3_url):
         """
@@ -150,6 +183,8 @@ class S3Downloader:
         paginator = self.s3_client.get_paginator('list_objects_v2')
 
         for page in paginator.paginate(Bucket=bucket, Prefix=prefix):
+            if self.interrupted:
+                return count
             if 'Contents' in page:
                 # 排除目录本身
                 files = [obj for obj in page['Contents'] if not obj['Key'].endswith('/')]
@@ -160,6 +195,10 @@ class S3Downloader:
     def _download_single_item(self, bucket, key, local_path):
         """下载单个文件到指定路径"""
         try:
+            # 检查是否被中断
+            if self.interrupted:
+                return False
+
             # 确保目录存在
             os.makedirs(os.path.dirname(local_path), exist_ok=True)
 
@@ -174,7 +213,8 @@ class S3Downloader:
 
             return True
         except Exception as e:
-            print(f"下载文件 {key} 时出错: {str(e)}")
+            if not self.interrupted:
+                print(f"下载文件 {key} 时出错: {str(e)}")
             return False
 
     def _download_file(self):
@@ -201,19 +241,26 @@ class S3Downloader:
             # 创建进度条
             with tqdm(total=file_size, unit='B', unit_scale=True, desc='下载进度') as pbar:
                 def callback(chunk):
+                    if self.interrupted:
+                        raise Exception("下载已被中断")
                     pbar.update(chunk)
 
                 self.s3_client.download_file(
                     self.bucket_name, self.key, local_path,
                     Callback=callback
                 )
-        except:
+        except Exception as e:
+            if self.interrupted:
+                print("\n下载被中断")
+                return False
             # 如果无法获取文件大小，使用简单进度提示
             print("下载中...")
             self.s3_client.download_file(self.bucket_name, self.key, local_path)
 
-        print(f"下载完成! 文件已保存到 {local_path}")
-        return True
+        if not self.interrupted:
+            print(f"下载完成! 文件已保存到 {local_path}")
+            return True
+        return False
 
     def _download_folder(self):
         """下载整个文件夹"""
@@ -228,23 +275,35 @@ class S3Downloader:
         # 计算文件总数
         print("正在计算文件总数...")
         self.total_files = self._count_folder_files(self.bucket_name, self.key)
+
+        if self.interrupted:
+            return False
+
         print(f"找到 {self.total_files} 个文件需要下载")
 
         if self.total_files == 0:
             print("指定的路径中没有找到文件")
-            return
+            return False
 
         # 创建进度条
         self.progress_bar = tqdm(total=self.total_files, unit='files', desc='下载进度')
 
         # 并发下载
-        with ThreadPoolExecutor(max_workers=self.max_workers) as executor:
-            download_tasks = []
+        self.executor = ThreadPoolExecutor(max_workers=self.max_workers)
+        download_tasks = []
+
+        try:
             paginator = self.s3_client.get_paginator('list_objects_v2')
 
             for page in paginator.paginate(Bucket=self.bucket_name, Prefix=self.key):
+                if self.interrupted:
+                    break
+
                 if 'Contents' in page:
                     for obj in page['Contents']:
+                        if self.interrupted:
+                            break
+
                         file_key = obj['Key']
 
                         # 跳过目录
@@ -260,24 +319,42 @@ class S3Downloader:
                             local_path = os.path.join(self.output_dir, relative_path)
 
                         # 提交下载任务
-                        download_tasks.append(
-                            executor.submit(
-                                self._download_single_item,
-                                self.bucket_name,
-                                file_key,
-                                local_path
-                            )
+                        future = self.executor.submit(
+                            self._download_single_item,
+                            self.bucket_name,
+                            file_key,
+                            local_path
                         )
+                        download_tasks.append(future)
 
             # 等待所有任务完成
-            for task in download_tasks:
-                task.result()
+            for future in as_completed(download_tasks):
+                if self.interrupted:
+                    break
+                try:
+                    future.result()
+                except Exception as e:
+                    if not self.interrupted:
+                        print(f"任务执行出错: {str(e)}")
 
-        # 关闭进度条
-        if self.progress_bar:
-            self.progress_bar.close()
+        except Exception as e:
+            if not self.interrupted:
+                print(f"下载过程中出错: {str(e)}")
+            return False
+        finally:
+            # 关闭线程池
+            self.executor.shutdown(wait=True)
 
-        print(f"下载完成! 成功下载了 {self.downloaded_files}/{self.total_files} 个文件到 {self.output_dir}")
+            # 关闭进度条
+            if self.progress_bar:
+                self.progress_bar.close()
+
+        if not self.interrupted:
+            print(f"下载完成! 成功下载了 {self.downloaded_files}/{self.total_files} 个文件到 {self.output_dir}")
+            return True
+        else:
+            print(f"下载被中断! 已下载 {self.downloaded_files}/{self.total_files} 个文件到 {self.output_dir}")
+            return False
 
     def download(self):
         """
@@ -303,7 +380,8 @@ class S3Downloader:
                 return self._download_folder()
 
         except Exception as e:
-            print(f"下载过程中出错: {str(e)}")
+            if not self.interrupted:
+                print(f"下载过程中出错: {str(e)}")
             if self.progress_bar:
                 self.progress_bar.close()
             return False
@@ -319,6 +397,9 @@ def main():
   %(prog)s s3://bucket-name/file.txt
   %(prog)s https://bucket-name.s3.amazonaws.com/folder/ -a
   %(prog)s s3://bucket/folder/ -o /local/path -k
+
+提示:
+  - 按 Ctrl+C 可中断下载并安全退出
         """
     )
 
@@ -354,7 +435,11 @@ def main():
     downloader.keep_structure = args.keep_structure
 
     # 执行下载
-    downloader.download()
+    print("按 Ctrl+C 可随时中断下载并退出")
+    success = downloader.download()
+
+    # 根据下载结果设置退出代码
+    sys.exit(0 if success else 1)
 
 
 if __name__ == "__main__":
