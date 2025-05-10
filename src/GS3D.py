@@ -14,10 +14,16 @@ import signal
 import argparse
 import threading
 import urllib.parse
+import platform
 from concurrent.futures import ThreadPoolExecutor, as_completed
 from tqdm import tqdm
 from botocore import UNSIGNED
 from botocore.config import Config
+
+# Windows特定导入
+if platform.system() == 'Windows':
+    import ctypes
+    from ctypes import wintypes
 
 
 class S3Downloader:
@@ -64,32 +70,76 @@ class S3Downloader:
         self.interrupted = False
         self.executor = None
 
-        # 设置信号处理器
-        self._setup_signal_handlers()
+        # 设置中断处理器
+        self._setup_interrupt_handlers()
 
-    def _setup_signal_handlers(self):
-        """设置信号处理器，用于处理Ctrl+C等中断信号"""
+    def _setup_interrupt_handlers(self):
+        """设置中断处理器，用于处理Ctrl+C等中断信号"""
+        if platform.system() == 'Windows':
+            # Windows特殊处理
+            self._setup_windows_handler()
+        else:
+            # Linux/Mac处理方式
+            def signal_handler(signum, frame):
+                self._handle_interrupt()
+
+            signal.signal(signal.SIGINT, signal_handler)
+            signal.signal(signal.SIGTERM, signal_handler)
+
+    def _setup_windows_handler(self):
+        """设置Windows控制台处理器"""
+        # 定义控制台控制器函数
+        def windows_ctrl_handler(ctrl_type):
+            if ctrl_type in (0, 2):  # CTRL_C_EVENT or CTRL_CLOSE_EVENT
+                self._handle_interrupt()
+                return True
+            return False
+
+        # 定义控制台控制器类型
+        HANDLER_ROUTINE = ctypes.WINFUNCTYPE(ctypes.c_bool, wintypes.DWORD)
+        kernel32 = ctypes.windll.kernel32
+
+        # 创建并设置处理器
+        self._ctrl_handler = HANDLER_ROUTINE(windows_ctrl_handler)
+        if not kernel32.SetConsoleCtrlHandler(self._ctrl_handler, True):
+            print("警告: 无法设置Windows控制台处理器")
+
+        # 额外设置标准的signal handler作为备用
         def signal_handler(signum, frame):
-            print("\n\n检测到中断信号，正在安全退出...")
-            self.interrupted = True
+            self._handle_interrupt()
 
-            # 关闭进度条
-            if self.progress_bar:
-                self.progress_bar.close()
+        signal.signal(signal.SIGINT, signal_handler)
 
-            # 如果正在进行文件夹下载，取消所有正在进行的任务
-            if self.executor:
-                self.executor.shutdown(wait=False)
+    def _handle_interrupt(self):
+        """处理中断请求"""
+        if self.interrupted:
+            return  # 避免重复处理
 
-            # 打印下载统计
-            print(f"\n已下载 {self.downloaded_files}/{self.total_files} 个文件")
-            print("下载已中断，程序即将退出...")
+        print("\n\n检测到中断信号，正在安全退出...")
+        self.interrupted = True
 
+        # 关闭进度条
+        if self.progress_bar:
+            self.progress_bar.close()
+
+        # 如果正在进行文件夹下载，取消所有正在进行的任务
+        if self.executor:
+            print("正在停止下载任务...")
+            self.executor.shutdown(wait=False)
+
+        # 打印下载统计
+        print(f"\n已下载 {self.downloaded_files}/{self.total_files} 个文件")
+        print("下载已中断，程序即将退出...")
+
+        # 在Windows下需要特殊处理
+        if platform.system() == 'Windows':
+            # 给一点时间让输出刷新
+            import time
+            time.sleep(0.5)
+            # 使用os._exit确保立即退出
+            os._exit(1)
+        else:
             sys.exit(1)
-
-        # 注册信号处理器
-        signal.signal(signal.SIGINT, signal_handler)  # Ctrl+C
-        signal.signal(signal.SIGTERM, signal_handler)  # 终止信号
 
     def _parse_s3_url(self, s3_url):
         """
@@ -436,10 +486,13 @@ def main():
 
     # 执行下载
     print("按 Ctrl+C 可随时中断下载并退出")
-    success = downloader.download()
-
-    # 根据下载结果设置退出代码
-    sys.exit(0 if success else 1)
+    try:
+        success = downloader.download()
+        # 根据下载结果设置退出代码
+        sys.exit(0 if success else 1)
+    except KeyboardInterrupt:
+        print("\n程序被用户中断")
+        sys.exit(1)
 
 
 if __name__ == "__main__":
