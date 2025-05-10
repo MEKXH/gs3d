@@ -6,153 +6,233 @@ on:
       - 'v*'
   workflow_dispatch:
 
+permissions:
+  contents: write
+  actions: read
+
 jobs:
   build:
     strategy:
+      fail-fast: false  # 不要在一个平台失败时取消其他平台
       matrix:
-        os: [ubuntu-20.04, windows-2019, macos-11]
-        python-version: ['3.10']
         include:
-          - os: ubuntu-20.04
+          - os: ubuntu-22.04
             platform_name: linux
             executable_extension: ""
-          - os: windows-2019
+            python-version: '3.10'
+            arch: x86_64
+          - os: windows-2022
             platform_name: windows
             executable_extension: ".exe"
-          - os: macos-11
+            python-version: '3.10'
+            arch: x86_64
+          - os: macos-12
             platform_name: macos
             executable_extension: ""
+            python-version: '3.10'
 
     runs-on: ${{ matrix.os }}
 
     steps:
-    - uses: actions/checkout@v3
+    - uses: actions/checkout@v4
 
     - name: Set up Python
-      uses: actions/setup-python@v4
+      uses: actions/setup-python@v5
       with:
         python-version: ${{ matrix.python-version }}
+        cache: 'pip'
 
     - name: Install dependencies
       run: |
-        python -m pip install --upgrade pip
+        python -m pip install --upgrade pip setuptools wheel
         pip install pyinstaller boto3 tqdm
 
     - name: Build with PyInstaller (Windows)
-      if: matrix.os == 'windows-2019'
+      if: matrix.os == 'windows-2022'
       run: |
-        pyinstaller --onefile --console --clean --name gs3d --hidden-import=boto3 --hidden-import=botocore --hidden-import=tqdm --hidden-import=urllib3 --exclude-module=tkinter --exclude-module=matplotlib src/G3SD.py
+        pyinstaller --onefile --console --clean --name gs3d ^
+          --hidden-import=boto3 ^
+          --hidden-import=botocore ^
+          --hidden-import=tqdm ^
+          --hidden-import=urllib3 ^
+          --hidden-import=datetime ^
+          --hidden-import=threading ^
+          --hidden-import=concurrent.futures ^
+          --exclude-module=tkinter ^
+          --exclude-module=matplotlib ^
+          --exclude-module=numpy ^
+          --exclude-module=pandas ^
+          src/G3SD.py
+      shell: cmd
 
     - name: Build with PyInstaller (Unix)
-      if: matrix.os != 'windows-2019'
+      if: matrix.os != 'windows-2022'
       run: |
-        pyinstaller --onefile --console --clean --name gs3d --hidden-import=boto3 --hidden-import=botocore --hidden-import=tqdm --hidden-import=urllib3 --exclude-module=tkinter --exclude-module=matplotlib src/G3SD.py
+        pyinstaller --onefile --console --clean --name gs3d \
+          --hidden-import=boto3 \
+          --hidden-import=botocore \
+          --hidden-import=tqdm \
+          --hidden-import=urllib3 \
+          --hidden-import=datetime \
+          --hidden-import=threading \
+          --hidden-import=concurrent.futures \
+          --exclude-module=tkinter \
+          --exclude-module=matplotlib \
+          --exclude-module=numpy \
+          --exclude-module=pandas \
+          src/G3SD.py
 
-    - name: Get architecture
+    - name: Get architecture information
       id: arch
       run: |
-        if [ "${{ matrix.os }}" = "windows-2019" ]; then
+        if [ "${{ matrix.os }}" = "windows-2022" ]; then
           echo "arch=x86_64" >> $GITHUB_OUTPUT
+        elif [ "${{ matrix.os }}" = "macos-12" ]; then
+          # Get actual architecture on macOS
+          actual_arch=$(uname -m)
+          echo "arch=$actual_arch" >> $GITHUB_OUTPUT
         else
-          echo "arch=$(uname -m)" >> $GITHUB_OUTPUT
+          echo "arch=x86_64" >> $GITHUB_OUTPUT
         fi
       shell: bash
 
-    - name: Rename executable
-      run: |
-        if [ "${{ matrix.os }}" = "windows-2019" ]; then
-          mv dist/gs3d.exe dist/gs3d-${{ matrix.platform_name }}-${{ steps.arch.outputs.arch }}.exe
-        elif [ "${{ matrix.os }}" = "macos-11" ]; then
-          mv dist/gs3d dist/gs3d-macos-${{ steps.arch.outputs.arch }}
-        else
-          mv dist/gs3d dist/gs3d-linux-${{ steps.arch.outputs.arch }}
-        fi
-      shell: bash
-
-    - name: Upload artifacts
-      uses: actions/upload-artifact@v3
-      with:
-        name: gs3d-${{ matrix.platform_name }}-${{ steps.arch.outputs.arch }}
-        path: |
-          dist/gs3d-*
-
-    - name: Create checksums
+    - name: Rename executable and create checksums
       run: |
         cd dist
-        if [ "${{ matrix.os }}" = "windows-2019" ]; then
-          certutil -hashfile gs3d-${{ matrix.platform_name }}-${{ steps.arch.outputs.arch }}.exe SHA256 > gs3d-${{ matrix.platform_name }}-${{ steps.arch.outputs.arch }}.exe.sha256
+        if [ "${{ matrix.os }}" = "windows-2022" ]; then
+          exe_name="gs3d-${{ matrix.platform_name }}-${{ steps.arch.outputs.arch }}.exe"
+          mv gs3d.exe "$exe_name"
+          # Create checksum for Windows
+          powershell -command "Get-FileHash '$exe_name' -Algorithm SHA256 | Select-Object -ExpandProperty Hash" > "$exe_name.sha256"
         else
-          sha256sum gs3d-${{ matrix.platform_name }}-${{ steps.arch.outputs.arch }} > gs3d-${{ matrix.platform_name }}-${{ steps.arch.outputs.arch }}.sha256
+          exe_name="gs3d-${{ matrix.platform_name }}-${{ steps.arch.outputs.arch }}"
+          mv gs3d "$exe_name"
+          # Create checksum for Unix
+          sha256sum "$exe_name" > "$exe_name.sha256"
         fi
+
+        # Save the executable name for later steps
+        echo "EXE_NAME=$exe_name" >> $GITHUB_ENV
       shell: bash
 
-    - name: Upload checksum artifact
-      uses: actions/upload-artifact@v3
+    - name: Upload executable
+      uses: actions/upload-artifact@v4
       with:
-        name: checksums
-        path: |
-          dist/*.sha256
+        name: gs3d-${{ matrix.platform_name }}-${{ steps.arch.outputs.arch }}
+        path: dist/${{ env.EXE_NAME }}
+        retention-days: 30
+
+    - name: Upload checksum
+      uses: actions/upload-artifact@v4
+      with:
+        name: checksum-${{ matrix.platform_name }}-${{ steps.arch.outputs.arch }}
+        path: dist/${{ env.EXE_NAME }}.sha256
+        retention-days: 30
 
   release:
     needs: build
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-22.04
     if: startsWith(github.ref, 'refs/tags/')
 
     steps:
-    - uses: actions/checkout@v3
+    - uses: actions/checkout@v4
 
     - name: Download all artifacts
-      uses: actions/download-artifact@v3
+      uses: actions/download-artifact@v4
       with:
         path: artifacts
 
     - name: Prepare release assets
       run: |
-        mkdir release
-        cp artifacts/gs3d-linux-*/gs3d-linux-* release/
-        cp artifacts/gs3d-macos-*/gs3d-macos-* release/
-        cp artifacts/gs3d-windows-*/gs3d-windows-*.exe release/
-        cp artifacts/checksums/* release/
+        mkdir -p release
+
+        # Copy all executables
+        find artifacts -name "gs3d-*" -type f -not -name "*.sha256" -exec cp {} release/ \;
 
         # Create combined checksums file
-        cat release/*.sha256 > release/checksums.txt
-        rm release/*.sha256
+        find artifacts -name "*.sha256" -type f -print0 | while read -d $'\0' file; do
+          cat "$file" >> release/checksums.txt
+        done
 
-    - name: Create Release Note
+        # List files for debugging
+        echo "Release files:"
+        ls -la release/
+
+    - name: Get version from tag
+      id: get_version
+      run: echo "VERSION=${GITHUB_REF#refs/tags/}" >> $GITHUB_OUTPUT
+
+    - name: Create Release Notes
       run: |
-        echo "# GS3D - Generic S3 Downloader" > release-notes.md
-        echo "" >> release-notes.md
-        echo "## Downloads" >> release-notes.md
-        echo "" >> release-notes.md
-        echo "### Windows" >> release-notes.md
-        echo "- [gs3d-windows-x86_64.exe](https://github.com/${{ github.repository }}/releases/download/${{ github.ref_name }}/gs3d-windows-x86_64.exe)" >> release-notes.md
-        echo "" >> release-notes.md
-        echo "### Linux" >> release-notes.md
-        echo "- [gs3d-linux-x86_64](https://github.com/${{ github.repository }}/releases/download/${{ github.ref_name }}/gs3d-linux-x86_64)" >> release-notes.md
-        echo "" >> release-notes.md
-        echo "### macOS" >> release-notes.md
-        echo "- [gs3d-macos-x86_64](https://github.com/${{ github.repository }}/releases/download/${{ github.ref_name }}/gs3d-macos-x86_64)" >> release-notes.md
-        echo "- [gs3d-macos-arm64](https://github.com/${{ github.repository }}/releases/download/${{ github.ref_name }}/gs3d-macos-arm64)" >> release-notes.md
-        echo "" >> release-notes.md
-        echo "## Usage" >> release-notes.md
-        echo "" >> release-notes.md
-        echo "\`\`\`bash" >> release-notes.md
-        echo "# Download a single file" >> release-notes.md
-        echo "gs3d https://bucket.s3.amazonaws.com/file.txt" >> release-notes.md
-        echo "" >> release-notes.md
-        echo "# Anonymous access" >> release-notes.md
-        echo "gs3d https://public-bucket.s3.amazonaws.com/file.txt -a" >> release-notes.md
-        echo "" >> release-notes.md
-        echo "# Download to specific directory" >> release-notes.md
-        echo "gs3d s3://bucket/folder/ -o ./downloads" >> release-notes.md
-        echo "\`\`\`" >> release-notes.md
-        echo "" >> release-notes.md
-        echo "## Verification" >> release-notes.md
-        echo "" >> release-notes.md
-        echo "All binaries are provided with SHA256 checksums in [checksums.txt](https://github.com/${{ github.repository }}/releases/download/${{ github.ref_name }}/checksums.txt)" >> release-notes.md
+        cat > release-notes.md << 'EOF'
+        # GS3D - Generic S3 Downloader ${{ steps.get_version.outputs.VERSION }}
+
+        A versatile S3 downloader that supports downloading single files or entire folders from AWS S3.
+
+        ## Downloads
+
+        ### Windows
+        - [gs3d-windows-x86_64.exe](https://github.com/${{ github.repository }}/releases/download/${{ steps.get_version.outputs.VERSION }}/gs3d-windows-x86_64.exe)
+
+        ### Linux
+        - [gs3d-linux-x86_64](https://github.com/${{ github.repository }}/releases/download/${{ steps.get_version.outputs.VERSION }}/gs3d-linux-x86_64)
+
+        ### macOS
+        - Intel: [gs3d-macos-x86_64](https://github.com/${{ github.repository }}/releases/download/${{ steps.get_version.outputs.VERSION }}/gs3d-macos-x86_64)
+        - Apple Silicon: [gs3d-macos-arm64](https://github.com/${{ github.repository }}/releases/download/${{ steps.get_version.outputs.VERSION }}/gs3d-macos-arm64)
+
+        ## Quick Start
+
+        ```bash
+        # Download a single file
+        gs3d https://bucket.s3.amazonaws.com/file.txt
+
+        # Anonymous access to public buckets
+        gs3d https://public-bucket.s3.amazonaws.com/file.txt -a
+
+        # Download entire folder
+        gs3d s3://bucket/folder/ -o ./downloads
+
+        # Show help
+        gs3d --help
+        ```
+
+        ## Installation
+
+        ### Windows
+        1. Download `gs3d-windows-x86_64.exe`
+        2. Optionally rename to `gs3d.exe`
+        3. Run from command prompt or PowerShell
+
+        ### Linux / macOS
+        1. Download the appropriate binary
+        2. Make it executable: `chmod +x gs3d-*`
+        3. Optionally move to PATH: `sudo mv gs3d-* /usr/local/bin/gs3d`
+        4. Run: `gs3d`
+
+        ## Verification
+
+        All binaries are provided with SHA256 checksums. Download [checksums.txt](https://github.com/${{ github.repository }}/releases/download/${{ steps.get_version.outputs.VERSION }}/checksums.txt) to verify:
+
+        ```bash
+        # Linux/macOS
+        sha256sum -c checksums.txt
+
+        # Windows (PowerShell)
+        Get-FileHash gs3d-windows-x86_64.exe -Algorithm SHA256
+        ```
+
+        ## Changes in this version
+
+        - Auto-detection of file vs. folder downloads
+        - Support for anonymous access to public S3 buckets
+        - Multi-threaded downloads for improved performance
+        - Progress bars for both single files and folder downloads
+        - Flexible output directory options
+        EOF
 
     - name: Create Release
-      uses: softprops/action-gh-release@v1
+      uses: softprops/action-gh-release@v2
       with:
         files: |
           release/*
