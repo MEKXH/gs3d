@@ -41,6 +41,7 @@ jobs:
 
     - name: Build
       run: |
+        # Adjust the path to the actual file location
         pyinstaller --onefile --console --clean --name gs3d \
           --hidden-import=boto3 \
           --hidden-import=botocore \
@@ -52,7 +53,7 @@ jobs:
           --exclude-module=matplotlib \
           --exclude-module=numpy \
           --exclude-module=pandas \
-          src/G3SD.py
+          src/GS3D.py
       shell: bash
 
     - name: Detect architecture (macOS)
