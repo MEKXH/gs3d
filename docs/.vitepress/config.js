@@ -39,6 +39,7 @@ export default {
                     items: [
                         // { text: '介绍首页', link: '/introduction/' },
                         { text: '什么是GS3D下载工具', link: '/introduction/what-is' },
+                        { text: '使用可执行文件', link: '/introduction/executable-usage' },
                         { text: '快速开始', link: '/introduction/getting-started' }
                     ]
                 }
