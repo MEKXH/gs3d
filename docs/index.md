@@ -43,8 +43,11 @@ features:
     title: 高效下载
     details: 多线程并行下载，最大限度提升下载速度
 ---
+<br/>
 
+---
 
+<br/>
 
 # 通用AWS S3下载工具
 
@@ -156,36 +159,8 @@ sha256sum gs3d-linux-x86_64
 - **内置匿名访问** - 无需额外配置即可访问公开存储桶
 - **更好的进度显示** - 实时进度条和下载统计
 
-## 立即开始使用
-
-<div style="display: flex; gap: 12px; margin-top: 24px;">
-  <a href="https://github.com/MEKXH/gs3d/releases/latest" style="background: linear-gradient(145deg, #3246d3, #4366ea); color: white; padding: 12px 24px; border-radius: 8px; text-decoration: none; font-weight: bold;">下载可执行文件</a>
-  <a href="/guide/" style="background: #f4f4f5; color: #3c3c43; padding: 12px 24px; border-radius: 8px; text-decoration: none; font-weight: bold;">查看指南</a>
-  <a href="/api/index" style="border: 1px solid #e4e4e7; color: #3c3c43; padding: 12px 24px; border-radius: 8px; text-decoration: none; font-weight: bold;">API参考</a>
-</div>
-
 ---
 
 <div class="footer-message">
 GS3D是一个开源项目，遵循MIT许可证，欢迎贡献和改进。<br>
-💡 <a href="https://github.com/MEKXH/gs3d/issues">反馈问题</a> | 📖 <a href="/guide/troubleshooting">故障排除</a> | 🤝 <a href="/contributing">贡献指南</a>
 </div>
-
-<style>
-.footer-message {
-  text-align: center;
-  margin-top: 48px;
-  padding-top: 24px;
-  border-top: 1px solid #e4e4e7;
-  color: #6b7280;
-}
-
-.footer-message a {
-  color: #3246d3;
-  text-decoration: none;
-}
-
-.footer-message a:hover {
-  text-decoration: underline;
-}
-</style>
