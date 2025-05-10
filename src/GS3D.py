@@ -2,7 +2,8 @@
 # -*- coding: utf-8 -*-
 
 """
-AWS S3 下载器 (Generic S3 Downloader)
+通用 AWS S3 下载器 (Generic S3 Downloader)
+支持下载单个文件或整个文件夹，自动检测并适配
 """
 
 import os
@@ -24,8 +25,7 @@ class S3Downloader:
         初始化S3下载器
 
         参数:
-            s3_url (str): S3链接，格式为 's3://bucket-name/folder/path/' 或 'https://bucket-name.s3.region.amazonaws.com/folder/path/'
-            当然，直接传入单个文件url也是可以的
+            s3_url (str): S3链接，支持多种格式的S3 URL
             profile_name (str): AWS配置文件名称
             access_key (str): AWS访问密钥ID
             secret_key (str): AWS秘密访问密钥
@@ -42,61 +42,70 @@ class S3Downloader:
         self.output_dir = output_dir or os.getcwd()
         self.max_workers = max_workers
         self.anonymous = anonymous
-        self.keep_structure = False  # 默认不保留完整结构
+        self.keep_structure = False
+
+        # S3 相关属性
         self.bucket_name = None
-        self.prefix = None
+        self.key = None
         self.s3_client = None
+
+        # 下载统计
         self.lock = threading.Lock()
         self.total_files = 0
         self.downloaded_files = 0
         self.progress_bar = None
 
-    def parse_s3_url(self, s3_url):
-        """解析S3 URL以获取bucket名称和前缀"""
+        # 下载类型标识
+        self.download_type = None  # 'file' 或 'folder'
+
+    def _parse_s3_url(self, s3_url):
+        """
+        解析S3 URL
+
+        支持多种格式:
+        - s3://bucket-name/path/to/file
+        - https://bucket-name.s3.region.amazonaws.com/path/to/file
+        - https://s3-region.amazonaws.com/bucket-name/path/to/file
+        """
         if s3_url.startswith('s3://'):
             # 处理s3://bucket-name/key格式
             parts = s3_url.replace('s3://', '').split('/', 1)
             self.bucket_name = parts[0]
-            self.prefix = parts[1] if len(parts) > 1 else ''
+            self.key = parts[1] if len(parts) > 1 else ''
         elif 's3.amazonaws.com' in s3_url:
             # 处理https://bucket-name.s3.region.amazonaws.com/key格式
             parsed_url = urllib.parse.urlparse(s3_url)
             self.bucket_name = parsed_url.netloc.split('.')[0]
-            self.prefix = parsed_url.path.lstrip('/')
+            self.key = parsed_url.path.lstrip('/')
         elif 's3-' in s3_url and '.amazonaws.com' in s3_url:
             # 处理https://s3-region.amazonaws.com/bucket-name/key格式
             parsed_url = urllib.parse.urlparse(s3_url)
             path_parts = parsed_url.path.lstrip('/').split('/', 1)
             self.bucket_name = path_parts[0]
-            self.prefix = path_parts[1] if len(path_parts) > 1 else ''
+            self.key = path_parts[1] if len(path_parts) > 1 else ''
         else:
             raise ValueError("无法识别的S3 URL格式。请使用以下格式之一：\n"
-                           "- s3://bucket-name/folder/path/\n"
-                           "- https://bucket-name.s3.region.amazonaws.com/folder/path/\n"
-                           "- https://s3-region.amazonaws.com/bucket-name/folder/path/")
+                           "- s3://bucket-name/path/to/file\n"
+                           "- https://bucket-name.s3.region.amazonaws.com/path/to/file\n"
+                           "- https://s3-region.amazonaws.com/bucket-name/path/to/file")
 
-        # 确保前缀以斜杠结尾（如果有前缀）
-        if self.prefix and not self.prefix.endswith('/'):
-            self.prefix += '/'
+        return self.bucket_name, self.key
 
-        return self.bucket_name, self.prefix
-
-    def initialize_s3_client(self):
+    def _initialize_s3_client(self):
         """初始化S3客户端"""
         client_kwargs = {}
 
         if self.region:
             client_kwargs['region_name'] = self.region
 
-        # 如果指定了匿名访问，使用UNSIGNED配置
+        # 匿名访问模式
         if self.anonymous:
             print("使用匿名访问模式...")
-            # 使用UNSIGNED签名
             client_kwargs['config'] = Config(signature_version=UNSIGNED)
             self.s3_client = boto3.client('s3', **client_kwargs)
             return self.s3_client
 
-        # 否则按正常流程尝试认证
+        # 认证访问模式
         if self.profile_name:
             session = boto3.Session(profile_name=self.profile_name)
             self.s3_client = session.client('s3', **client_kwargs)
@@ -107,37 +116,49 @@ class S3Downloader:
             )
             self.s3_client = session.client('s3', **client_kwargs)
         else:
-            # 尝试使用默认凭证，如果失败则自动尝试匿名访问
+            # 尝试使用默认凭证，失败则自动切换到匿名模式
             try:
                 self.s3_client = boto3.client('s3', **client_kwargs)
                 # 测试连接
-                self.s3_client.list_objects_v2(Bucket=self.bucket_name, Prefix=self.prefix, MaxKeys=1)
+                self.s3_client.list_objects_v2(Bucket=self.bucket_name, Prefix=self.key, MaxKeys=1)
             except Exception as e:
                 print(f"无法使用默认凭证: {str(e)}")
                 print("自动切换到匿名访问模式...")
-
-                # 使用UNSIGNED配置进行匿名访问
                 client_kwargs['config'] = Config(signature_version=UNSIGNED)
                 self.s3_client = boto3.client('s3', **client_kwargs)
 
         return self.s3_client
 
-    def count_files(self, bucket, prefix):
-        """计算需要下载的文件总数"""
+    def _check_key_type(self):
+        """检查指定的key是文件还是文件夹"""
+        try:
+            # 尝试获取对象元数据
+            self.s3_client.head_object(Bucket=self.bucket_name, Key=self.key)
+            self.download_type = 'file'
+            return 'file'
+        except self.s3_client.exceptions.ClientError as e:
+            if e.response['Error']['Code'] == '404':
+                # 如果key不存在作为文件，检查是否可能是文件夹
+                self.download_type = 'folder'
+                return 'folder'
+            else:
+                raise
+
+    def _count_folder_files(self, bucket, prefix):
+        """计算文件夹中的文件总数"""
         count = 0
         paginator = self.s3_client.get_paginator('list_objects_v2')
 
-        # 遍历所有页面
         for page in paginator.paginate(Bucket=bucket, Prefix=prefix):
             if 'Contents' in page:
-                # 排除目录本身和空目录
+                # 排除目录本身
                 files = [obj for obj in page['Contents'] if not obj['Key'].endswith('/')]
                 count += len(files)
 
         return count
 
-    def download_file(self, bucket, key, local_path):
-        """下载单个文件"""
+    def _download_single_item(self, bucket, key, local_path):
+        """下载单个文件到指定路径"""
         try:
             # 确保目录存在
             os.makedirs(os.path.dirname(local_path), exist_ok=True)
@@ -145,7 +166,7 @@ class S3Downloader:
             # 下载文件
             self.s3_client.download_file(bucket, key, local_path)
 
-            # 更新进度条
+            # 更新进度统计
             with self.lock:
                 self.downloaded_files += 1
                 if self.progress_bar:
@@ -156,85 +177,152 @@ class S3Downloader:
             print(f"下载文件 {key} 时出错: {str(e)}")
             return False
 
-    def download_folder(self):
+    def _download_file(self):
+        """下载单个文件"""
+        print(f"开始下载单个文件: s3://{self.bucket_name}/{self.key}")
+
+        # 确定本地保存路径
+        if self.keep_structure:
+            local_path = os.path.join(self.output_dir, self.key)
+        else:
+            filename = os.path.basename(self.key)
+            local_path = os.path.join(self.output_dir, filename)
+
+        # 确保目录存在
+        os.makedirs(os.path.dirname(local_path), exist_ok=True)
+
+        print(f"保存到: {local_path}")
+
+        try:
+            # 获取文件大小用于进度条
+            response = self.s3_client.head_object(Bucket=self.bucket_name, Key=self.key)
+            file_size = response['ContentLength']
+
+            # 创建进度条
+            with tqdm(total=file_size, unit='B', unit_scale=True, desc='下载进度') as pbar:
+                def callback(chunk):
+                    pbar.update(chunk)
+
+                self.s3_client.download_file(
+                    self.bucket_name, self.key, local_path,
+                    Callback=callback
+                )
+        except:
+            # 如果无法获取文件大小，使用简单进度提示
+            print("下载中...")
+            self.s3_client.download_file(self.bucket_name, self.key, local_path)
+
+        print(f"下载完成! 文件已保存到 {local_path}")
+        return True
+
+    def _download_folder(self):
         """下载整个文件夹"""
+        print(f"开始下载文件夹: s3://{self.bucket_name}/{self.key}")
+        print(f"保存到: {self.output_dir}")
+
+        if self.keep_structure:
+            print("将保留完整的目录结构")
+        else:
+            print("将只保留相对路径")
+
+        # 计算文件总数
+        print("正在计算文件总数...")
+        self.total_files = self._count_folder_files(self.bucket_name, self.key)
+        print(f"找到 {self.total_files} 个文件需要下载")
+
+        if self.total_files == 0:
+            print("指定的路径中没有找到文件")
+            return
+
+        # 创建进度条
+        self.progress_bar = tqdm(total=self.total_files, unit='files', desc='下载进度')
+
+        # 并发下载
+        with ThreadPoolExecutor(max_workers=self.max_workers) as executor:
+            download_tasks = []
+            paginator = self.s3_client.get_paginator('list_objects_v2')
+
+            for page in paginator.paginate(Bucket=self.bucket_name, Prefix=self.key):
+                if 'Contents' in page:
+                    for obj in page['Contents']:
+                        file_key = obj['Key']
+
+                        # 跳过目录
+                        if file_key.endswith('/'):
+                            continue
+
+                        # 计算本地保存路径
+                        if self.keep_structure:
+                            local_path = os.path.join(self.output_dir, file_key)
+                        else:
+                            relative_path = file_key[len(self.key):] if self.key else file_key
+                            relative_path = relative_path.lstrip('/')
+                            local_path = os.path.join(self.output_dir, relative_path)
+
+                        # 提交下载任务
+                        download_tasks.append(
+                            executor.submit(
+                                self._download_single_item,
+                                self.bucket_name,
+                                file_key,
+                                local_path
+                            )
+                        )
+
+            # 等待所有任务完成
+            for task in download_tasks:
+                task.result()
+
+        # 关闭进度条
+        if self.progress_bar:
+            self.progress_bar.close()
+
+        print(f"下载完成! 成功下载了 {self.downloaded_files}/{self.total_files} 个文件到 {self.output_dir}")
+
+    def download(self):
+        """
+        执行下载操作
+        自动检测是下载单个文件还是文件夹
+        """
         try:
             # 解析S3链接
-            if not self.bucket_name or not self.prefix:
-                self.parse_s3_url(self.s3_url)
+            if not self.bucket_name or self.key is None:
+                self._parse_s3_url(self.s3_url)
 
             # 初始化S3客户端
             if not self.s3_client:
-                self.initialize_s3_client()
+                self._initialize_s3_client()
 
-            print(f"开始从 s3://{self.bucket_name}/{self.prefix} 下载文件到 {self.output_dir}")
-            if self.keep_structure:
-                print("将保留完整的目录结构")
+            # 检查下载类型
+            download_type = self._check_key_type()
+
+            # 根据类型执行相应的下载操作
+            if download_type == 'file':
+                return self._download_file()
             else:
-                print("将只下载指定前缀下的文件")
-
-            # 计算文件总数用于进度显示
-            print("正在计算文件总数...")
-            self.total_files = self.count_files(self.bucket_name, self.prefix)
-            print(f"找到 {self.total_files} 个文件需要下载")
-
-            if self.total_files == 0:
-                print("指定的S3路径中没有找到文件")
-                return
-
-            # 创建进度条
-            self.progress_bar = tqdm(total=self.total_files, unit='files')
-
-            # 获取所有对象
-            paginator = self.s3_client.get_paginator('list_objects_v2')
-            download_tasks = []
-
-            with ThreadPoolExecutor(max_workers=self.max_workers) as executor:
-                # 遍历所有页面
-                for page in paginator.paginate(Bucket=self.bucket_name, Prefix=self.prefix):
-                    if 'Contents' in page:
-                        for obj in page['Contents']:
-                            key = obj['Key']
-
-                            # 跳过目录本身
-                            if key.endswith('/'):
-                                continue
-
-                            # 根据keep_structure标志决定路径处理方式
-                            if self.keep_structure:
-                                # 保留完整的路径结构
-                                local_path = os.path.join(self.output_dir, key)
-                            else:
-                                # 只保留相对于指定前缀的路径
-                                relative_path = key[len(self.prefix):] if self.prefix else key
-                                local_path = os.path.join(self.output_dir, relative_path)
-
-                            # 提交下载任务
-                            download_tasks.append(
-                                executor.submit(
-                                    self.download_file,
-                                    self.bucket_name,
-                                    key,
-                                    local_path
-                                )
-                            )
-
-            # 关闭进度条
-            if self.progress_bar:
-                self.progress_bar.close()
-
-            print(f"下载完成! 成功下载了 {self.downloaded_files}/{self.total_files} 个文件到 {self.output_dir}")
+                return self._download_folder()
 
         except Exception as e:
             print(f"下载过程中出错: {str(e)}")
             if self.progress_bar:
                 self.progress_bar.close()
+            return False
 
 
 def main():
     """主函数"""
-    parser = argparse.ArgumentParser(description='下载AWS S3文件夹中的所有文件')
-    parser.add_argument('s3_url', help='S3链接，例如 s3://bucket-name/folder/ 或 https://bucket-name.s3.region.amazonaws.com/folder/')
+    parser = argparse.ArgumentParser(
+        description='下载AWS S3文件夹中的所有文件或单个文件',
+        formatter_class=argparse.RawDescriptionHelpFormatter,
+        epilog="""
+示例:
+  %(prog)s s3://bucket-name/file.txt
+  %(prog)s https://bucket-name.s3.amazonaws.com/folder/ -a
+  %(prog)s s3://bucket/folder/ -o /local/path -k
+        """
+    )
+
+    parser.add_argument('s3_url', help='S3链接，支持文件或文件夹')
     parser.add_argument('--profile', '-p', help='AWS配置文件名称')
     parser.add_argument('--access-key', '-ak', help='AWS访问密钥ID')
     parser.add_argument('--secret-key', '-sk', help='AWS秘密访问密钥')
@@ -246,11 +334,11 @@ def main():
 
     args = parser.parse_args()
 
-    # 如果同时提供了profile和access/secret key，使用access/secret key
+    # 警告信息
     if args.profile and (args.access_key or args.secret_key):
         print("警告: 同时提供了配置文件和访问密钥，将优先使用访问密钥")
 
-    # 初始化下载器
+    # 创建下载器实例
     downloader = S3Downloader(
         s3_url=args.s3_url,
         profile_name=args.profile,
@@ -262,14 +350,11 @@ def main():
         anonymous=args.anonymous
     )
 
-    # 如果指定了保留目录结构，设置标志位
-    if args.keep_structure:
-        downloader.keep_structure = True
-    else:
-        downloader.keep_structure = False
+    # 设置保留目录结构标志
+    downloader.keep_structure = args.keep_structure
 
-    # 开始下载
-    downloader.download_folder()
+    # 执行下载
+    downloader.download()
 
 
 if __name__ == "__main__":
