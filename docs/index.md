@@ -22,7 +22,7 @@ features:
     title: 开箱即用
     details: 下载可执行文件，无需安装Python或依赖
   - icon: 🖥️
-    title: 双平台支持
+    title: 跨平台支持
     details: 支持Windows和Linux，macOS版本即将推出
   - icon: 🔒
     title: 支持匿名访问
