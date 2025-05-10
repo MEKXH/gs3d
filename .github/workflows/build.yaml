@@ -41,12 +41,15 @@ jobs:
       with:
         python-version: ${{ matrix.python-version }}
         cache: 'pip'
+        cache-dependency-path: 'requirements.txt'  # 明确指定依赖文件路径
 
     - name: Install dependencies
       run: |
-        python -m pip install --upgrade pip setuptools wheel
-        pip install pyinstaller boto3 tqdm
+        python -m pip install --upgrade pip
+        pip install -r requirements.txt
+        pip install pyinstaller
 
+    # 其余步骤保持不变...
     - name: Build with PyInstaller (Windows)
       if: matrix.os == 'windows-2022'
       run: |
