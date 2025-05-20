@@ -182,7 +182,7 @@ class S3Downloader:
 
         if self.region:
             client_kwargs['region_name'] = self.region
-        
+
         if self.endpoint_url:
             client_kwargs['endpoint_url'] = self.endpoint_url
 
@@ -467,7 +467,7 @@ def main():
     parser.add_argument('--max-workers', '-w', type=int, default=5, help='最大并发下载线程数，默认5')
     parser.add_argument('--anonymous', '-a', action='store_true', help='使用匿名访问（用于公开存储桶）')
     parser.add_argument('--keep-structure', '-k', action='store_true', help='保留完整的目录结构（包含存储桶路径）')
-    parser.add_argument('--endpoint-url', '-e', help='Custom S3 endpoint URL (e.g., http://localhost:9000)')
+    parser.add_argument('--endpoint-url', '-e', help='自定义 S3 endpoint URL (e.g., http://localhost:9000)')
 
     args = parser.parse_args()
 

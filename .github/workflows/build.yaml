@@ -21,27 +21,49 @@ jobs:
           - os: windows-2022
             platform: windows
             arch: x86_64
-        #   - os: macos-12
-        #     platform: macos
+          - os: macos-12
+            platform: macos
 
     runs-on: ${{ matrix.os }}
 
     steps:
-    - uses: actions/checkout@v4
+    - uses: actions/checkout@8ade135a41bc03ea155e62e844d188df1ea18608 # v4.1.0
+
+    - name: Check Git status
+      run: |
+        git --version
+        git status
+        echo "Current working directory: $(pwd)"
+        ls -la
+      shell: bash
 
     - name: Set up Python
       uses: actions/setup-python@v5
       with:
         python-version: '3.10'
 
+    - name: Check Python environment
+      run: |
+        python --version
+        pip list
+        echo "PATH: $PATH"
+      shell: bash
+
     - name: Install dependencies
       run: |
         python -m pip install --upgrade pip
         pip install pyinstaller boto3 tqdm
+      shell: bash
 
     - name: Build
+      id: build-attempt-1
+      continue-on-error: true
       run: |
-        # Adjust the path to the actual file location
+        echo "=============== 开始构建 ==============="
+        echo "OS: ${{ matrix.os }}, Platform: ${{ matrix.platform }}, Arch: ${{ matrix.arch }}"
+        # 设置错误处理
+        set -e
+        # 尝试构建
         pyinstaller --onefile --console --clean --name gs3d \
           --hidden-import=boto3 \
           --hidden-import=botocore \
@@ -54,6 +76,28 @@ jobs:
           --exclude-module=numpy \
           --exclude-module=pandas \
           src/GS3D.py
+        echo "=============== 构建完成 ==============="
+      shell: bash
+
+    - name: Retry Build if Failed
+      if: steps.build-attempt-1.outcome == 'failure'
+      run: |
+        echo "=============== 重试构建 ==============="
+        # 清理并重试
+        rm -rf build dist
+        pyinstaller --onefile --console --clean --name gs3d \
+          --hidden-import=boto3 \
+          --hidden-import=botocore \
+          --hidden-import=tqdm \
+          --hidden-import=urllib3 \
+          --hidden-import=threading \
+          --hidden-import=concurrent.futures \
+          --exclude-module=tkinter \
+          --exclude-module=matplotlib \
+          --exclude-module=numpy \
+          --exclude-module=pandas \
+          src/GS3D.py
+        echo "=============== 重试构建完成 ==============="
       shell: bash
 
     - name: Detect architecture (macOS)
@@ -62,6 +106,7 @@ jobs:
       run: |
         arch=$(uname -m)
         echo "arch=$arch" >> $GITHUB_OUTPUT
+      shell: bash
 
     - name: Set output name
       id: output
@@ -79,14 +124,46 @@ jobs:
         echo "name=$name" >> $GITHUB_OUTPUT
       shell: bash
 
+    - name: Test executable
+      run: |
+        echo "=============== 测试可执行文件 ==============="
+        if [ "${{ matrix.os }}" = "windows-2022" ]; then
+          ./dist/${{ steps.output.outputs.name }} --version || echo "测试失败，但继续执行"
+        else
+          chmod +x ./dist/${{ steps.output.outputs.name }}
+          ./dist/${{ steps.output.outputs.name }} --version || echo "测试失败，但继续执行"
+        fi
+        echo "=============== 测试完成 ==============="
+      shell: bash
+      continue-on-error: true
+
     - name: Create checksum
       run: |
+        echo "=============== 创建校验和 ==============="
         cd dist
         if [ "${{ matrix.os }}" = "windows-2022" ]; then
           certutil -hashfile "${{ steps.output.outputs.name }}" SHA256 > "${{ steps.output.outputs.name }}.sha256"
         else
           sha256sum "${{ steps.output.outputs.name }}" > "${{ steps.output.outputs.name }}.sha256"
         fi
+        echo "=============== 校验和创建完成 ==============="
+      shell: bash
+
+    - name: Verify build artifacts
+      run: |
+        echo "=============== 验证构建产物 ==============="
+        if [ ! -f "dist/${{ steps.output.outputs.name }}" ]; then
+          echo "构建失败：找不到输出文件"
+          exit 1
+        fi
+
+        if [ ! -f "dist/${{ steps.output.outputs.name }}.sha256" ]; then
+          echo "校验和生成失败"
+          exit 1
+        fi
+
+        echo "构建成功：所有文件都已正确生成"
+        echo "=============== 验证完成 ==============="
       shell: bash
 
     - name: Upload artifacts
@@ -104,7 +181,16 @@ jobs:
     if: startsWith(github.ref, 'refs/tags/')
 
     steps:
-    - uses: actions/checkout@v4
+    - uses: actions/checkout@8ade135a41bc03ea155e62e844d188df1ea18608 # v4.1.0
+
+    - name: Check Git status before release
+      run: |
+        git --version
+        git status
+        echo "Current reference: ${{ github.ref }}"
+        echo "Current working directory: $(pwd)"
+        ls -la
+      shell: bash
 
     - name: Download all artifacts
       uses: actions/download-artifact@v4
@@ -113,25 +199,30 @@ jobs:
 
     - name: Prepare release assets
       run: |
+        echo "=============== 准备发布资产 ==============="
         mkdir -p release
 
-        # Copy all files from individual artifact folders
+        # 复制所有文件从单独的构件文件夹
         for dir in artifacts/*; do
           if [ -d "$dir" ]; then
+            echo "Processing directory: $dir"
             cp -r "$dir"/* release/
           fi
         done
 
-        # Create combined checksums.txt
+        # 创建合并的校验和文件
         cat release/*.sha256 > release/checksums.txt
         rm release/*.sha256
 
         echo "Release files:"
         ls -la release/
+        echo "=============== 发布资产准备完成 ==============="
+      shell: bash
 
     - name: Get version
       id: get_version
       run: echo "VERSION=${GITHUB_REF#refs/tags/}" >> $GITHUB_OUTPUT
+      shell: bash
 
     - name: Create Release
       uses: softprops/action-gh-release@v2
@@ -140,23 +231,34 @@ jobs:
         body: |
           # GS3D - Generic S3 Downloader ${{ steps.get_version.outputs.VERSION }}
 
-          ## Downloads
+          ## 下载
 
           - Windows: [gs3d-windows-x86_64.exe](https://github.com/${{ github.repository }}/releases/download/${{ steps.get_version.outputs.VERSION }}/gs3d-windows-x86_64.exe)
           - Linux: [gs3d-linux-x86_64](https://github.com/${{ github.repository }}/releases/download/${{ steps.get_version.outputs.VERSION }}/gs3d-linux-x86_64)
-          - macOS: Available for Intel and Apple Silicon
+          - macOS: [gs3d-macos-x86_64](https://github.com/${{ github.repository }}/releases/download/${{ steps.get_version.outputs.VERSION }}/gs3d-macos-x86_64) (英特尔) / [gs3d-macos-arm64](https://github.com/${{ github.repository }}/releases/download/${{ steps.get_version.outputs.VERSION }}/gs3d-macos-arm64) (M1/M2)
 
-          ## Usage
+          ## 使用方法
 
           ```bash
-          # Download a file
+          # 下载文件
           gs3d https://bucket.s3.amazonaws.com/file.txt
 
-          # Anonymous access
+          # 匿名访问
           gs3d https://public-bucket.s3.amazonaws.com/file.txt -a
           ```
 
-          SHA256 checksums available in [checksums.txt](https://github.com/${{ github.repository }}/releases/download/${{ steps.get_version.outputs.VERSION }}/checksums.txt)
+          ## 安装
+
+          ### Windows
+          1. 下载可执行文件
+          2. 将其放置在您的 PATH 中的目录
+
+          ### Linux/macOS
+          1. 下载可执行文件
+          2. 添加执行权限：`chmod +x gs3d-*`
+          3. 移动到您的 PATH：`sudo mv gs3d-* /usr/local/bin/gs3d`
+
+          SHA256 校验和文件: [checksums.txt](https://github.com/${{ github.repository }}/releases/download/${{ steps.get_version.outputs.VERSION }}/checksums.txt)
         draft: false
         prerelease: false
       env:

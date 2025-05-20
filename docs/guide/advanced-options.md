@@ -2,17 +2,17 @@
 
 除了基本用法外，GS3D下载工具还提供了一系列高级选项，让你可以更灵活地控制下载过程。本页面将详细介绍这些高级功能。
 
-## Custom S3 Endpoint URL (`--endpoint-url` / `-e`)
+## 自定义 S3 端点 URL (`--endpoint-url` / `-e`)
 
-For users working with S3-compatible storage solutions (like MinIO, Ceph Object Gateway, etc.), GS3D allows you to specify a custom endpoint URL. This tells the tool where to send S3 requests instead of the default AWS S3 endpoints.
+对于使用 **S3 兼容存储解决方案**（例如 MinIO, Ceph Object Gateway 等）的用户，GS3D 允许您指定一个**自定义端点 URL**。这会告诉工具将 S3 请求发送到哪里，而不是默认的 AWS S3 端点。
 
-To use this feature, provide the endpoint URL using the `--endpoint-url` or `-e` command-line argument:
+要使用此功能，请通过 `--endpoint-url` 或 `-e` 命令行参数提供端点 URL：
 
 ```bash
 python GS3D.py s3://your-bucket/your-prefix/ -e http://your-s3-compatible-host:port
 ```
 
-Replace `http://your-s3-compatible-host:port` with the actual endpoint URL of your S3-compatible service.
+请将 `http://your-s3-compatible-host:port` 替换为您 S3 兼容服务的实际端点 URL。
 
 ## 性能调优
 
