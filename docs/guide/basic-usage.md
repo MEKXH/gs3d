@@ -138,3 +138,4 @@ python GS3D.py s3://large-files-bucket/folder/ --max-workers 5 --output-dir ./la
 | `--max-workers` | `-w` | 最大并发下载线程数，默认为10 |
 | `--anonymous` | `-a` | 使用匿名访问模式（用于公开存储桶） |
 | `--keep-structure` | `-k` | 保留完整的目录结构 |
+| `--endpoint-url` | `-e` | 自定义S3端点URL (例如 `http://localhost:9000`) |

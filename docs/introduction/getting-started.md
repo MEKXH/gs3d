@@ -112,4 +112,4 @@ python GS3D.py s3://my-bucket/folder/ --max-workers 20
 - [基本用法](/guide/basic-usage) - 详细的命令行参数说明
 - [匿名访问](/guide/anonymous-access) - 深入了解如何访问公开存储桶
 - [目录结构保留](/guide/keep-structure) - 关于目录结构管理的详细说明
-- [高级选项](/guide/advanced-options) - 探索更多自定义选项
+- [高级选项](/guide/advanced-options) - 探索更多自定义选项, including using a [Custom S3 Endpoint URL](/guide/advanced-options#custom-s3-endpoint-url-endpoint-url-e).
