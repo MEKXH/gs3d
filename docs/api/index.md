@@ -17,6 +17,7 @@ GS3D支持以下命令行参数：
 | `--max-workers` | `-w` | 整数 | 10 | 最大并发下载线程数 |
 | `--anonymous` | `-a` | 标志 | False | 使用匿名访问模式（用于公开存储桶） |
 | `--keep-structure` | `-k` | 标志 | False | 保留完整的目录结构 |
+| `--endpoint-url` | `-e` | 字符串 | None | 自定义S3端点URL (例如 `http://localhost:9000`) |
 
 ## 使用语法
 
@@ -109,6 +110,15 @@ python GS3D.py s3://public-bucket/folder/ --anonymous
 例如：
 ```bash
 python GS3D.py s3://my-bucket/deep/nested/folder/ --keep-structure
+```
+
+### --endpoint-url / -e
+
+指定自定义S3端点URL，用于连接S3兼容的存储服务（如MinIO、Ceph等）。
+
+例如：
+```bash
+python GS3D.py s3://my-bucket/folder/ --endpoint-url http://minio.example.com:9000
 ```
 
 ## 返回值

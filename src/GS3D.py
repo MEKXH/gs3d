@@ -28,7 +28,7 @@ if platform.system() == 'Windows':
 
 class S3Downloader:
     def __init__(self, s3_url=None, profile_name=None, access_key=None, secret_key=None,
-                 region=None, output_dir=None, max_workers=10, anonymous=False):
+                 region=None, output_dir=None, max_workers=10, anonymous=False, endpoint_url=None):
         """
         初始化S3下载器
 
@@ -41,6 +41,7 @@ class S3Downloader:
             output_dir (str): 本地输出目录
             max_workers (int): 最大并发下载线程数
             anonymous (bool): 是否使用匿名访问模式
+            endpoint_url (str): 自定义S3端点URL
         """
         self.s3_url = s3_url
         self.profile_name = profile_name
@@ -50,6 +51,7 @@ class S3Downloader:
         self.output_dir = output_dir or os.getcwd()
         self.max_workers = max_workers
         self.anonymous = anonymous
+        self.endpoint_url = endpoint_url
         self.keep_structure = False
 
         # S3 相关属性
@@ -180,6 +182,9 @@ class S3Downloader:
 
         if self.region:
             client_kwargs['region_name'] = self.region
+        
+        if self.endpoint_url:
+            client_kwargs['endpoint_url'] = self.endpoint_url
 
         # 匿名访问模式
         if self.anonymous:
@@ -462,6 +467,7 @@ def main():
     parser.add_argument('--max-workers', '-w', type=int, default=5, help='最大并发下载线程数，默认5')
     parser.add_argument('--anonymous', '-a', action='store_true', help='使用匿名访问（用于公开存储桶）')
     parser.add_argument('--keep-structure', '-k', action='store_true', help='保留完整的目录结构（包含存储桶路径）')
+    parser.add_argument('--endpoint-url', '-e', help='Custom S3 endpoint URL (e.g., http://localhost:9000)')
 
     args = parser.parse_args()
 
@@ -478,7 +484,8 @@ def main():
         region=args.region,
         output_dir=args.output_dir,
         max_workers=args.max_workers,
-        anonymous=args.anonymous
+        anonymous=args.anonymous,
+        endpoint_url=args.endpoint_url
     )
 
     # 设置保留目录结构标志

@@ -86,6 +86,7 @@ python GS3D.py s3://my-bucket/folder/ --profile my-profile-name
 | `--max-workers` | `-w` | Maximum number of concurrent download threads, default is 10 |
 | `--anonymous` | `-a` | Use anonymous access mode (for public buckets) |
 | `--keep-structure` | `-k` | Preserve complete directory structure |
+| `--endpoint-url` | `-e` | Custom S3 endpoint URL (e.g., `http://localhost:9000`) for S3-compatible services. |
 
 ## Use Cases
 
